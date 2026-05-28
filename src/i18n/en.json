@@ -1,0 +1,135 @@
+{
+  "title": "HANOI TOWER",
+  "menu": {
+    "high": "Best: {{score}} • Top Floor {{level}}",
+    "theme": "Theme: {{name}}",
+    "play_classic": "▶ Play (Classic)",
+    "daily_play": "📅 Daily Challenge",
+    "daily_played": "📅 Daily Played ({{date}})",
+    "themes": "🎨 Themes",
+    "achievements": "🏆 Achievements",
+    "settings": "⚙ Settings",
+    "hint": "Click/Space to drop • ESC to pause"
+  },
+  "hud": {
+    "floor": "Floor {{level}}",
+    "combo": "Combo x{{combo}} ({{mult}}x)"
+  },
+  "pause": {
+    "title": "PAUSED",
+    "resume": "▶ Resume",
+    "restart": "↻ Restart",
+    "menu": "↩ Main Menu"
+  },
+  "gameover": {
+    "title": "GAME OVER",
+    "score": "Score: {{score}}",
+    "level": "Floor reached: {{level}}",
+    "new_high": "★ NEW HIGH SCORE! ★\nHigh Score: {{high}}",
+    "high": "High Score: {{high}}",
+    "replay": "▶ Replay",
+    "menu": "↩ Main Menu",
+    "share": "📤 Share",
+    "share_text": "I just scored {{score}} (floor {{level}}) in Hanoi Tower!",
+    "share_copied": "Copied to clipboard!"
+  },
+  "tutorial": {
+    "title": "HOW TO PLAY",
+    "step": "Step {{n}} / {{total}}",
+    "intro": {
+      "title": "Welcome to Hanoi Tower!",
+      "body": "Stack floors as high as you can — without toppling the tower. Each run takes only a few minutes; you'll pick it up fast."
+    },
+    "swing": {
+      "title": "Blocks swing horizontally",
+      "body": "Each floor slides left and right above the tower. Speed ramps up the higher you climb."
+    },
+    "drop": {
+      "title": "Tap to drop",
+      "body": "Click, tap, or press Space to stop and drop the block. Timing is everything."
+    },
+    "perfect": {
+      "title": "Perfect = score × combo",
+      "body": "Land aligned with the floor below → Perfect (✨). 3 in a row triggers slow-mo + ×2/×3/×4/×5 score multiplier."
+    },
+    "slice": {
+      "title": "Misses get shaved",
+      "body": "Any overhang falls off and the floor shrinks. Miss entirely → Game Over."
+    },
+    "powerups": {
+      "title": "Power-up blocks",
+      "body": "Every 8 floors a special block may appear: ↔ Wider • ⏱ Slow-Mo • ★ Magnet • ♥ Heal."
+    },
+    "hud": {
+      "title": "Track your run",
+      "body": "Top HUD: 🏆 Score • Floor • Combo • ⏸ Pause. Settings lets you tune music/language."
+    },
+    "themes": {
+      "title": "Unlock new themes",
+      "body": "Reach Floor 50 to unlock Saigon 🌃, Floor 100 to unlock Hue 🏯. Each theme has its own sky."
+    },
+    "next": "Next ▶",
+    "back": "◀ Back",
+    "start": "🎮 Play now",
+    "skip": "Skip"
+  },
+  "settings": {
+    "title": "SETTINGS",
+    "bgm": "Music",
+    "sfx": "SFX",
+    "haptic": "Haptics",
+    "language": "Language",
+    "on": "ON",
+    "off": "OFF",
+    "reset": "Reset Data",
+    "reset_confirm": "Confirm reset",
+    "back": "← Back"
+  },
+  "achievements": {
+    "title": "ACHIEVEMENTS",
+    "count": "{{unlocked}} / {{total}}",
+    "back": "← Back",
+    "items": {
+      "tower_10": { "title": "First Floor", "desc": "Reach Floor 10" },
+      "tower_25": { "title": "Neighborhood", "desc": "Reach Floor 25" },
+      "tower_50": { "title": "High-Rise", "desc": "Reach Floor 50 (unlocks Saigon theme)" },
+      "tower_100": { "title": "Tower", "desc": "Reach Floor 100 (unlocks Hue theme)" },
+      "tower_200": { "title": "To the Stars", "desc": "Reach Floor 200" },
+      "score_1k": { "title": "Warming Up", "desc": "Score 1,000 in a single run" },
+      "score_5k": { "title": "Serious", "desc": "Score 5,000 in a single run" },
+      "score_10k": { "title": "Legendary", "desc": "Score 10,000 in a single run" },
+      "first_perfect": { "title": "Perfect Drop", "desc": "Your first Perfect" },
+      "combo_5": { "title": "Five-Streak", "desc": "Combo Perfect x5" },
+      "combo_10": { "title": "Hot Streak", "desc": "Combo Perfect x10" },
+      "combo_20": { "title": "Unstoppable", "desc": "Combo Perfect x20" },
+      "perfect_100": { "title": "Master", "desc": "100 Perfects total" },
+      "powerup_wide": { "title": "Wider", "desc": "Use Wide power-up" },
+      "powerup_slow": { "title": "Slow-Mo", "desc": "Use Slow power-up" },
+      "powerup_magnet": { "title": "Magnet", "desc": "Use Magnet power-up" },
+      "powerup_heal": { "title": "Heal", "desc": "Use Heal power-up" },
+      "daily_1": { "title": "Newcomer", "desc": "Play Daily once" },
+      "daily_7": { "title": "Regular", "desc": "Play Daily 7 days" }
+    }
+  },
+  "themes": {
+    "title": "SELECT THEME",
+    "selected": "✓ Selected",
+    "select": "Select",
+    "locked": "🔒 Unlocks at Floor {{level}}",
+    "back": "← Back",
+    "hanoi": "Hanoi",
+    "saigon": "Saigon",
+    "hue": "Hue",
+    "desc": {
+      "hanoi": "Old Quarter at dawn, Tây Lake breeze.",
+      "saigon": "Neon alleys at night, tropical heat.",
+      "hue": "Quiet royal city, drizzling rain."
+    }
+  },
+  "powerup": {
+    "wide": "↔ NEXT BLOCK WIDER",
+    "slow": "⏱ SLOW-MO",
+    "magnet": "★ MAGNET",
+    "heal": "♥ HEAL"
+  }
+}

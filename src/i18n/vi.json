@@ -1,0 +1,135 @@
+{
+  "title": "THÁP HÀ NỘI",
+  "menu": {
+    "high": "Kỷ lục: {{score}} • Tầng max {{level}}",
+    "theme": "Theme: {{name}}",
+    "play_classic": "▶ Chơi (Classic)",
+    "daily_play": "📅 Daily Challenge",
+    "daily_played": "📅 Daily đã chơi ({{date}})",
+    "themes": "🎨 Themes",
+    "achievements": "🏆 Thành tựu",
+    "settings": "⚙ Cài đặt",
+    "hint": "Click/Space để thả • ESC tạm dừng"
+  },
+  "hud": {
+    "floor": "Tầng {{level}}",
+    "combo": "Combo x{{combo}} ({{mult}}x)"
+  },
+  "pause": {
+    "title": "TẠM DỪNG",
+    "resume": "▶ Tiếp tục",
+    "restart": "↻ Chơi lại",
+    "menu": "↩ Menu chính"
+  },
+  "gameover": {
+    "title": "GAME OVER",
+    "score": "Điểm: {{score}}",
+    "level": "Tầng đạt được: {{level}}",
+    "new_high": "★ KỶ LỤC MỚI! ★\nHigh Score: {{high}}",
+    "high": "High Score: {{high}}",
+    "replay": "▶ Chơi lại",
+    "menu": "↩ Menu chính",
+    "share": "📤 Chia sẻ",
+    "share_text": "Tôi vừa đạt {{score}} điểm (tầng {{level}}) trong Tháp Hà Nội!",
+    "share_copied": "Đã copy vào clipboard!"
+  },
+  "tutorial": {
+    "title": "HƯỚNG DẪN",
+    "step": "Bước {{n}} / {{total}}",
+    "intro": {
+      "title": "Chào mừng đến Tháp Hà Nội!",
+      "body": "Xếp tầng nhà thật cao — nhưng coi chừng đổ tháp. Game kéo dài chỉ vài phút mỗi ván, càng chơi càng quen."
+    },
+    "swing": {
+      "title": "Block đang di chuyển",
+      "body": "Khối nhà sẽ trượt qua lại liên tục theo chiều ngang. Càng lên cao, tốc độ càng tăng."
+    },
+    "drop": {
+      "title": "Nhấn để thả",
+      "body": "Click chuột, chạm màn hình hoặc nhấn phím Space để dừng và thả khối xuống. Canh đúng lúc!"
+    },
+    "perfect": {
+      "title": "Perfect = điểm × combo",
+      "body": "Đặt thẳng hàng với tầng dưới → Perfect (✨). Liên tiếp 3 Perfect mở slow-mo + bonus điểm x2/x3/x4/x5."
+    },
+    "slice": {
+      "title": "Lệch sẽ bị gọt",
+      "body": "Lệch nhiều = phần thừa rơi xuống, tầng bị thu hẹp. Trượt hoàn toàn = Game Over."
+    },
+    "powerups": {
+      "title": "Power-up đặc biệt",
+      "body": "Mỗi 8 tầng có thể xuất hiện power-up: ↔ Mở rộng • ⏱ Chậm lại • ★ Nam châm • ♥ Hồi phục."
+    },
+    "hud": {
+      "title": "Theo dõi điểm",
+      "body": "HUD trên: 🏆 Điểm • Tầng hiện tại • Combo • ⏸ Pause. Vào Settings để chỉnh nhạc/ngôn ngữ."
+    },
+    "themes": {
+      "title": "Mở khoá theme",
+      "body": "Đạt tầng 50 mở khoá Sài Gòn 🌃, tầng 100 mở khoá Huế 🏯. Mỗi theme có sky riêng."
+    },
+    "next": "Tiếp ▶",
+    "back": "◀ Trước",
+    "start": "🎮 Chơi ngay",
+    "skip": "Bỏ qua"
+  },
+  "settings": {
+    "title": "CÀI ĐẶT",
+    "bgm": "Nhạc nền",
+    "sfx": "Hiệu ứng",
+    "haptic": "Rung phản hồi",
+    "language": "Ngôn ngữ",
+    "on": "BẬT",
+    "off": "TẮT",
+    "reset": "Xoá dữ liệu",
+    "reset_confirm": "Xác nhận xoá",
+    "back": "← Quay lại"
+  },
+  "achievements": {
+    "title": "THÀNH TỰU",
+    "count": "{{unlocked}} / {{total}}",
+    "back": "← Quay lại",
+    "items": {
+      "tower_10": { "title": "Tầng đầu", "desc": "Đạt tầng 10" },
+      "tower_25": { "title": "Khu phố", "desc": "Đạt tầng 25" },
+      "tower_50": { "title": "Cao ốc", "desc": "Đạt tầng 50 (mở khoá theme Sài Gòn)" },
+      "tower_100": { "title": "Toà tháp", "desc": "Đạt tầng 100 (mở khoá theme Huế)" },
+      "tower_200": { "title": "Vũ trụ", "desc": "Đạt tầng 200" },
+      "score_1k": { "title": "Điểm khởi đầu", "desc": "Đạt 1.000 điểm trong 1 ván" },
+      "score_5k": { "title": "Tay chơi cứng", "desc": "Đạt 5.000 điểm trong 1 ván" },
+      "score_10k": { "title": "Huyền thoại", "desc": "Đạt 10.000 điểm trong 1 ván" },
+      "first_perfect": { "title": "Khớp hoàn hảo", "desc": "Lần đầu Perfect" },
+      "combo_5": { "title": "Bộ năm", "desc": "Combo Perfect x5" },
+      "combo_10": { "title": "Hot streak", "desc": "Combo Perfect x10" },
+      "combo_20": { "title": "Bất bại", "desc": "Combo Perfect x20" },
+      "perfect_100": { "title": "Bậc thầy", "desc": "Tổng 100 lần Perfect" },
+      "powerup_wide": { "title": "Mở rộng", "desc": "Dùng power-up Mở rộng" },
+      "powerup_slow": { "title": "Chậm lại", "desc": "Dùng power-up Chậm lại" },
+      "powerup_magnet": { "title": "Nam châm", "desc": "Dùng power-up Nam châm" },
+      "powerup_heal": { "title": "Hồi phục", "desc": "Dùng power-up Hồi phục" },
+      "daily_1": { "title": "Người mới", "desc": "Chơi Daily lần đầu" },
+      "daily_7": { "title": "Đều đặn", "desc": "Chơi Daily 7 ngày" }
+    }
+  },
+  "themes": {
+    "title": "CHỌN THEME",
+    "selected": "✓ Đang chọn",
+    "select": "Chọn",
+    "locked": "🔒 Mở khoá ở tầng {{level}}",
+    "back": "← Quay lại",
+    "hanoi": "Hà Nội",
+    "saigon": "Sài Gòn",
+    "hue": "Huế",
+    "desc": {
+      "hanoi": "Phố cổ buổi sớm, gió Hồ Tây.",
+      "saigon": "Hẻm nhỏ về đêm, đèn neon, hơi thở nhiệt đới.",
+      "hue": "Hoàng cung trầm mặc, mưa lất phất."
+    }
+  },
+  "powerup": {
+    "wide": "↔ TẦNG SAU TO HƠN",
+    "slow": "⏱ CHẬM LẠI",
+    "magnet": "★ NAM CHÂM",
+    "heal": "♥ HỒI PHỤC"
+  }
+}

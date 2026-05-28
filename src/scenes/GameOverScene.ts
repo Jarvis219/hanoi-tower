@@ -1,0 +1,153 @@
+import Phaser from 'phaser';
+import { GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../config/Constants';
+import { t } from '../systems/I18nManager';
+import { themeManager } from '../systems/ThemeManager';
+import { Button, COLOR } from '../ui/Button';
+import { shareScore } from '../utils/shareScore';
+import type { GameMode } from '../types/SaveData';
+
+interface GameOverData {
+  level?: number;
+  score?: number;
+  highScore?: number;
+  newHighScore?: boolean;
+  mode?: GameMode;
+}
+
+export class GameOverScene extends Phaser.Scene {
+  private level = 0;
+  private score = 0;
+  private highScore = 0;
+  private newHighScore = false;
+  private mode: GameMode = 'classic';
+  private shareBtn?: Button;
+
+  constructor() {
+    super({ key: SCENE_KEYS.GameOver });
+  }
+
+  public init(data: GameOverData): void {
+    this.level = data.level ?? 0;
+    this.score = data.score ?? 0;
+    this.highScore = data.highScore ?? 0;
+    this.newHighScore = data.newHighScore ?? false;
+    this.mode = data.mode ?? 'classic';
+  }
+
+  public create(): void {
+    const theme = themeManager.getSelected();
+    this.cameras.main.setBackgroundColor(theme.menuBgColor);
+
+    this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.2, t('gameover.title'), {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '48px',
+        color: themeManager.accentHex(),
+        fontStyle: 'bold',
+        stroke: '#000',
+        strokeThickness: 5,
+      })
+      .setOrigin(0.5);
+
+    if (this.mode === 'daily') {
+      this.add
+        .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.28, '📅 Daily', {
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: '16px',
+          color: '#5dade2',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5);
+    }
+
+    // Score card — rounded panel for emphasis
+    const card = this.add.graphics();
+    card.fillStyle(0x0f3460, 0.85);
+    card.fillRoundedRect(GAME_WIDTH * 0.1, GAME_HEIGHT * 0.32, GAME_WIDTH * 0.8, 160, 14);
+    card.lineStyle(2, 0xf2cc8f, 0.9);
+    card.strokeRoundedRect(GAME_WIDTH * 0.1, GAME_HEIGHT * 0.32, GAME_WIDTH * 0.8, 160, 14);
+
+    this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.35, t('gameover.score', { score: this.score }), {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '30px',
+        color: '#ffffff',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5, 0);
+
+    this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.42, t('gameover.level', { level: this.level }), {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '16px',
+        color: '#cccccc',
+      })
+      .setOrigin(0.5, 0);
+
+    const hsLabel = this.newHighScore
+      ? t('gameover.new_high', { high: this.highScore })
+      : t('gameover.high', { high: this.highScore });
+    this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.47, hsLabel, {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '14px',
+        color: this.newHighScore ? '#f2cc8f' : '#aaaaaa',
+        align: 'center',
+        fontStyle: this.newHighScore ? 'bold' : 'normal',
+      })
+      .setOrigin(0.5, 0);
+
+    const btnW = 260;
+    let y = GAME_HEIGHT * 0.66;
+    const gap = 12;
+
+    new Button(this, {
+      x: GAME_WIDTH / 2,
+      y,
+      width: btnW,
+      label: t('gameover.replay').replace(/^▶\s*/, ''),
+      icon: '▶',
+      bgColor: COLOR.primary,
+      onClick: () => this.scene.start(SCENE_KEYS.Game, { mode: this.mode }),
+    });
+
+    y += 52 + gap;
+    this.shareBtn = new Button(this, {
+      x: GAME_WIDTH / 2,
+      y,
+      width: btnW,
+      height: 46,
+      label: t('gameover.share').replace(/^📤\s*/, ''),
+      icon: '📤',
+      fontSize: 16,
+      bgColor: COLOR.secondary,
+      onClick: () => void this.handleShare(),
+    });
+
+    y += 46 + gap;
+    new Button(this, {
+      x: GAME_WIDTH / 2,
+      y,
+      width: btnW,
+      height: 44,
+      label: t('gameover.menu').replace(/^↩\s*/, ''),
+      icon: '↩',
+      fontSize: 14,
+      bgColor: COLOR.neutral,
+      onClick: () => this.scene.start(SCENE_KEYS.MainMenu),
+    });
+  }
+
+  private async handleShare(): Promise<void> {
+    if (!this.shareBtn) return;
+    const canvas = (this.game.canvas as HTMLCanvasElement) ?? undefined;
+    const result = await shareScore({
+      text: t('gameover.share_text', { score: this.score, level: this.level }),
+      canvas,
+    });
+    if (result.method === 'clipboard' && result.ok) {
+      this.shareBtn.setLabel(t('gameover.share_copied'));
+      this.time.delayedCall(2000, () => this.shareBtn?.setLabel(t('gameover.share').replace(/^📤\s*/, '')));
+    }
+  }
+}
