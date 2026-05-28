@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../config/Constants';
 import { SPRITE_SHEET_KEY, SPRITE_SHEET_PATH, registerAtlasFrames } from '../config/atlas';
+import { consentManager } from '../systems/ConsentManager';
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -27,6 +28,13 @@ export class PreloadScene extends Phaser.Scene {
 
   create(): void {
     registerAtlasFrames(this.textures);
+    // Route to consent banner if ads are configured but the user hasn't decided yet.
+    // Otherwise drop into the menu — Tutorial gate is handled by MainMenu.
+    const adsConfigured = Boolean(import.meta.env.VITE_ADSENSE_PUBLISHER_ID);
+    if (adsConfigured && !consentManager.hasDecided()) {
+      this.scene.start(SCENE_KEYS.ConsentBanner);
+      return;
+    }
     this.scene.start(SCENE_KEYS.MainMenu);
   }
 
