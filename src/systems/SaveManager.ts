@@ -29,8 +29,20 @@ const isoDate = (d: Date = new Date()): string =>
 
 const sortDesc = (a: LeaderboardEntry, b: LeaderboardEntry): number => b.score - a.score;
 
+export type SaveChangeReason =
+  | 'settings'
+  | 'run'
+  | 'achievement'
+  | 'theme'
+  | 'tutorial'
+  | 'cloud';
+
+type ChangeListener = (data: Readonly<SaveDataV1>, reason: SaveChangeReason) => void;
+
 export class SaveManager {
   private data: SaveDataV1;
+  private listeners = new Set<ChangeListener>();
+  private quiet = false;
 
   constructor() {
     this.data = this.load();
@@ -47,12 +59,46 @@ export class SaveManager {
     }
   }
 
-  private flush(): void {
+  private flush(reason: SaveChangeReason = 'settings'): void {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
     } catch {
       // Storage unavailable — fail silently.
     }
+    if (!this.quiet) {
+      this.listeners.forEach((cb) => {
+        try {
+          cb(this.data, reason);
+        } catch (err) {
+          console.warn('[SaveManager] listener threw:', err);
+        }
+      });
+    }
+  }
+
+  /** Subscribe to mutations. Returns an unsubscribe fn. */
+  public onAnyChange(cb: ChangeListener): () => void {
+    this.listeners.add(cb);
+    return () => this.listeners.delete(cb);
+  }
+
+  /**
+   * Apply a snapshot from the cloud without re-broadcasting (avoids feedback loop
+   * back to CloudSyncManager). Used only by CloudSyncManager on first pull or
+   * when a remote write lands while the tab is open.
+   */
+  public applyCloudSnapshot(patch: Partial<SaveDataV1>): void {
+    this.quiet = true;
+    try {
+      this.data = { ...this.data, ...patch, v: 1 };
+      this.flush('cloud');
+    } finally {
+      this.quiet = false;
+    }
+  }
+
+  public snapshot(): Readonly<SaveDataV1> {
+    return this.data;
   }
 
   // ── Audio / haptic / language ─────────────────────────────────────
@@ -80,6 +126,9 @@ export class SaveManager {
   public get tutorialDone(): boolean {
     return this.data.tutorialDone;
   }
+  public get displayName(): string | undefined {
+    return this.data.displayName;
+  }
 
   public setBgmVolume(v: number): void {
     this.data.bgmVolume = Math.max(0, Math.min(1, v));
@@ -97,13 +146,18 @@ export class SaveManager {
     this.data.language = lang;
     this.flush();
   }
+  public setDisplayName(name: string): void {
+    const trimmed = name.trim();
+    this.data.displayName = trimmed.length > 0 ? trimmed : undefined;
+    this.flush('settings');
+  }
   public setSelectedTheme(t: ThemeId): void {
     this.data.selectedTheme = t;
-    this.flush();
+    this.flush('theme');
   }
   public markTutorialDone(): void {
     this.data.tutorialDone = true;
-    this.flush();
+    this.flush('tutorial');
   }
 
   // ── Run records / leaderboard ────────────────────────────────────
@@ -144,7 +198,7 @@ export class SaveManager {
       }
     }
 
-    this.flush();
+    this.flush('run');
     return { newHighScore, newHighLevel };
   }
 
@@ -174,7 +228,7 @@ export class SaveManager {
       next.unlockedAt = isoDate();
     }
     this.data.achievements[id] = next;
-    this.flush();
+    this.flush('achievement');
     return next.unlocked && !wasUnlocked;
   }
 }

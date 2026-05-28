@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../config/Constants';
+import { adsManager } from '../systems/AdsManager';
 import { audioManager } from '../systems/AudioManager';
 import {
   buildDailyContext,
@@ -139,9 +140,20 @@ export class MainMenuScene extends Phaser.Scene {
 
     y += 46 + gap;
     new Button(this, {
-      x: GAME_WIDTH / 2,
+      x: GAME_WIDTH / 2 - halfW / 2 - gap / 2,
       y,
-      width: btnW,
+      width: halfW,
+      height: 44,
+      label: t('menu.leaderboard').replace(/^🌍\s*/, ''),
+      icon: '🌍',
+      fontSize: 14,
+      bgColor: COLOR.secondary,
+      onClick: () => this.scene.start(SCENE_KEYS.Leaderboard),
+    });
+    new Button(this, {
+      x: GAME_WIDTH / 2 + halfW / 2 + gap / 2,
+      y,
+      width: halfW,
       height: 44,
       label: t('menu.settings').replace(/^⚙\s*/, ''),
       icon: '⚙',
@@ -149,6 +161,10 @@ export class MainMenuScene extends Phaser.Scene {
       bgColor: COLOR.neutral,
       onClick: () => this.scene.start(SCENE_KEYS.Settings),
     });
+
+    // Mount banner ad below the canvas (DOM overlay). Safe no-op when ads are
+    // not configured or the user has not granted consent.
+    void adsManager.showBanner();
 
     this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT - 20, t('menu.hint'), {

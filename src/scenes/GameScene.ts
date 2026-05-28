@@ -54,6 +54,7 @@ export class GameScene extends Phaser.Scene {
   private rng: () => number = Math.random;
   private perfectCountThisRun = 0;
   private maxComboThisRun = 0;
+  private runStartedAt = 0;
   private detachUnlockListener?: () => void;
 
   constructor() {
@@ -98,6 +99,7 @@ export class GameScene extends Phaser.Scene {
     this.pendingWideBonus = false;
     this.perfectCountThisRun = 0;
     this.maxComboThisRun = 0;
+    this.runStartedAt = performance.now();
     this.active = null;
 
     if (!this.scene.isActive(SCENE_KEYS.HUD)) {
@@ -410,6 +412,7 @@ export class GameScene extends Phaser.Scene {
       ).size;
       achievementManager.setIfHigher('daily_7', distinctDays);
     }
+    const runDurationMs = Math.max(0, Math.round(performance.now() - this.runStartedAt));
     this.time.delayedCall(700, () => {
       this.scene.stop(SCENE_KEYS.HUD);
       this.scene.start(SCENE_KEYS.GameOver, {
@@ -418,6 +421,8 @@ export class GameScene extends Phaser.Scene {
         highScore: saveManager.highScore,
         newHighScore: record.newHighScore,
         mode: this.mode,
+        runDurationMs,
+        perfects: this.perfectCountThisRun,
       });
     });
   }

@@ -8,6 +8,7 @@
     "daily_played": "📅 Daily đã chơi ({{date}})",
     "themes": "🎨 Themes",
     "achievements": "🏆 Thành tựu",
+    "leaderboard": "🌍 BXH toàn cầu",
     "settings": "⚙ Cài đặt",
     "hint": "Click/Space để thả • ESC tạm dừng"
   },
@@ -31,7 +32,12 @@
     "menu": "↩ Menu chính",
     "share": "📤 Chia sẻ",
     "share_text": "Tôi vừa đạt {{score}} điểm (tầng {{level}}) trong Tháp Hà Nội!",
-    "share_copied": "Đã copy vào clipboard!"
+    "share_copied": "Đã copy vào clipboard!",
+    "submitting": "Đang gửi điểm…",
+    "submitted": "✓ Đã gửi lên bảng xếp hạng",
+    "submit_offline": "Chưa kết nối — sẽ tự gửi khi online",
+    "submit_failed": "Không gửi được điểm",
+    "world_rank": "🌍 Hạng toàn cầu: #{{rank}}"
   },
   "tutorial": {
     "title": "HƯỚNG DẪN",
@@ -83,7 +89,11 @@
     "off": "TẮT",
     "reset": "Xoá dữ liệu",
     "reset_confirm": "Xác nhận xoá",
-    "back": "← Quay lại"
+    "back": "← Quay lại",
+    "section_audio": "Âm thanh",
+    "section_prefs": "Tuỳ chỉnh",
+    "section_account": "Tài khoản",
+    "section_danger": "Vùng nguy hiểm"
   },
   "achievements": {
     "title": "THÀNH TỰU",
@@ -131,5 +141,54 @@
     "slow": "⏱ CHẬM LẠI",
     "magnet": "★ NAM CHÂM",
     "heal": "♥ HỒI PHỤC"
+  },
+  "leaderboard": {
+    "title": "BẢNG XẾP HẠNG",
+    "mode_classic": "Classic",
+    "mode_daily": "Daily",
+    "period_daily": "Hôm nay",
+    "period_weekly": "Tuần này",
+    "period_alltime": "Mọi thời đại",
+    "loading": "Đang tải…",
+    "cached": "(từ bộ nhớ tạm)",
+    "offline": "Cần kết nối Internet để xem BXH toàn cầu.",
+    "empty": "Chưa có ai trong bảng — thử chơi và gửi điểm trước!",
+    "count": "Top {{n}}",
+    "row_sub": "Tầng {{level}}",
+    "my_rank": "Bạn: #{{rank}}",
+    "my_rank_outside": "Bạn đang ngoài top 100",
+    "no_rank_yet": "Bạn chưa có hạng — chơi thêm 1 ván!",
+    "back": "← Quay lại"
+  },
+  "account": {
+    "section": "TÀI KHOẢN",
+    "guest": "Đang chơi ẩn danh",
+    "linked": "Liên kết Google: {{email}}",
+    "link_google": "Đăng nhập Google để lưu tiến trình",
+    "unlink": "Bỏ liên kết",
+    "sign_out": "Đăng xuất",
+    "link_success": "Đã liên kết với Google",
+    "link_failed": "Liên kết thất bại: {{error}}",
+    "username": "Tên hiển thị",
+    "edit_username": "Đổi tên",
+    "username_prompt": "Đổi tên hiển thị (3-20 ký tự)",
+    "username_too_short": "Tên tối thiểu 3 ký tự",
+    "username_too_long": "Tên tối đa 20 ký tự",
+    "username_taken": "Tên này đã được người khác sử dụng. Thử tên khác đi nhé.",
+    "username_invalid_chars": "Tên chỉ chứa chữ, số, dấu gạch dưới, chấm hoặc gạch ngang.",
+    "username_failed": "Đổi tên thất bại. Thử lại sau.",
+    "save": "Lưu",
+    "cancel": "Huỷ",
+    "saving": "Đang lưu…"
+  },
+  "consent": {
+    "title": "CHO PHÉP QUẢNG CÁO?",
+    "body": "Game này hiển thị quảng cáo Google AdSense để hỗ trợ chi phí vận hành. Bạn có thể đổi quyết định sau trong Cài đặt.",
+    "accept": "Đồng ý",
+    "reject": "Không, cảm ơn",
+    "note": "Khi đồng ý, Google có thể sử dụng cookies để cá nhân hoá quảng cáo (theo Chính sách của Google)."
+  },
+  "ads": {
+    "personalised": "Cho phép quảng cáo cá nhân hoá"
   }
 }

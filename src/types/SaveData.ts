@@ -28,6 +28,8 @@ export interface SaveDataV1 {
   sfxVolume: number;
   hapticEnabled: boolean;
   language: 'vi' | 'en';
+  /** User-chosen display name. When undefined, falls back to OAuth name or 'Player_XXXX'. */
+  displayName?: string;
   leaderboard: {
     classic: LeaderboardEntry[];
     daily: LeaderboardEntry[];

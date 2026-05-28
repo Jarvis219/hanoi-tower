@@ -8,6 +8,7 @@
     "daily_played": "📅 Daily Played ({{date}})",
     "themes": "🎨 Themes",
     "achievements": "🏆 Achievements",
+    "leaderboard": "🌍 Leaderboard",
     "settings": "⚙ Settings",
     "hint": "Click/Space to drop • ESC to pause"
   },
@@ -31,7 +32,12 @@
     "menu": "↩ Main Menu",
     "share": "📤 Share",
     "share_text": "I just scored {{score}} (floor {{level}}) in Hanoi Tower!",
-    "share_copied": "Copied to clipboard!"
+    "share_copied": "Copied to clipboard!",
+    "submitting": "Submitting score…",
+    "submitted": "✓ Score submitted",
+    "submit_offline": "Offline — will submit when online",
+    "submit_failed": "Submit failed",
+    "world_rank": "🌍 World rank: #{{rank}}"
   },
   "tutorial": {
     "title": "HOW TO PLAY",
@@ -83,7 +89,11 @@
     "off": "OFF",
     "reset": "Reset Data",
     "reset_confirm": "Confirm reset",
-    "back": "← Back"
+    "back": "← Back",
+    "section_audio": "Audio",
+    "section_prefs": "Preferences",
+    "section_account": "Account",
+    "section_danger": "Danger zone"
   },
   "achievements": {
     "title": "ACHIEVEMENTS",
@@ -131,5 +141,54 @@
     "slow": "⏱ SLOW-MO",
     "magnet": "★ MAGNET",
     "heal": "♥ HEAL"
+  },
+  "leaderboard": {
+    "title": "LEADERBOARD",
+    "mode_classic": "Classic",
+    "mode_daily": "Daily",
+    "period_daily": "Today",
+    "period_weekly": "This week",
+    "period_alltime": "All-time",
+    "loading": "Loading…",
+    "cached": "(from cache)",
+    "offline": "Internet connection required to view the global leaderboard.",
+    "empty": "No entries yet — be the first to submit a score!",
+    "count": "Top {{n}}",
+    "row_sub": "Floor {{level}}",
+    "my_rank": "You: #{{rank}}",
+    "my_rank_outside": "You are outside the top 100",
+    "no_rank_yet": "No rank yet — play a round!",
+    "back": "← Back"
+  },
+  "account": {
+    "section": "ACCOUNT",
+    "guest": "Playing as guest",
+    "linked": "Linked Google: {{email}}",
+    "link_google": "Sign in with Google to back up progress",
+    "unlink": "Unlink",
+    "sign_out": "Sign out",
+    "link_success": "Linked with Google",
+    "link_failed": "Link failed: {{error}}",
+    "username": "Display name",
+    "edit_username": "Edit name",
+    "username_prompt": "Change display name (3-20 chars)",
+    "username_too_short": "Name must be at least 3 chars",
+    "username_too_long": "Name must be at most 20 chars",
+    "username_taken": "That name is already taken — try another.",
+    "username_invalid_chars": "Allowed characters: letters, digits, underscore, dot, hyphen.",
+    "username_failed": "Couldn't change name. Try again later.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saving": "Saving…"
+  },
+  "consent": {
+    "title": "ALLOW ADS?",
+    "body": "This game shows Google AdSense to help cover hosting costs. You can change this later in Settings.",
+    "accept": "Accept",
+    "reject": "No thanks",
+    "note": "Accepting lets Google use cookies for personalised ads (per Google's policies)."
+  },
+  "ads": {
+    "personalised": "Allow personalised ads"
   }
 }
