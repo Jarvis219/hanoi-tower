@@ -1,5 +1,5 @@
 {
-  "title": "THÁP HÀ NỘI",
+  "title": "THÁP PHỐ VIỆT",
   "menu": {
     "high": "Kỷ lục: {{score}} • Tầng max {{level}}",
     "theme": "Theme: {{name}}",
@@ -31,7 +31,7 @@
     "replay": "▶ Chơi lại",
     "menu": "↩ Menu chính",
     "share": "📤 Chia sẻ",
-    "share_text": "Tôi vừa đạt {{score}} điểm (tầng {{level}}) trong Tháp Hà Nội!",
+    "share_text": "Tôi vừa đạt {{score}} điểm (tầng {{level}}) trong Tháp Phố Việt!",
     "share_copied": "Đã copy vào clipboard!",
     "submitting": "Đang gửi điểm…",
     "submitted": "✓ Đã gửi lên bảng xếp hạng",
@@ -43,7 +43,7 @@
     "title": "HƯỚNG DẪN",
     "step": "Bước {{n}} / {{total}}",
     "intro": {
-      "title": "Chào mừng đến Tháp Hà Nội!",
+      "title": "Chào mừng đến Tháp Phố Việt!",
       "body": "Xếp tầng nhà thật cao — nhưng coi chừng đổ tháp. Game kéo dài chỉ vài phút mỗi ván, càng chơi càng quen."
     },
     "swing": {
@@ -166,7 +166,8 @@
     "section": "TÀI KHOẢN",
     "guest": "Đang chơi ẩn danh",
     "linked": "Liên kết Google: {{email}}",
-    "link_google": "Đăng nhập Google để lưu tiến trình",
+    "link_google": "Đăng nhập với Google",
+    "link_google_hint": "Lưu tiến trình lên đám mây",
     "unlink": "Bỏ liên kết",
     "sign_out": "Đăng xuất",
     "link_success": "Đã liên kết với Google",

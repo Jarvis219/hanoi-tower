@@ -40,9 +40,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icons/*.png'],
       manifest: {
-        name: 'Tháp Hà Nội',
-        short_name: 'ThápHN',
-        description: 'Stack Tower game — xếp tầng nhà phố cổ Hà Nội',
+        name: 'Tháp Phố Việt',
+        short_name: 'PhốViệt',
+        description: 'Stack Tower — xếp nhà phố qua Hà Nội, Huế, Đà Nẵng, Sài Gòn',
         theme_color: '#1a1a2e',
         background_color: '#0f3460',
         display: 'standalone',

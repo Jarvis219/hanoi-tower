@@ -1,5 +1,5 @@
 {
-  "title": "HANOI TOWER",
+  "title": "VIETNAM STREET STACK",
   "menu": {
     "high": "Best: {{score}} • Top Floor {{level}}",
     "theme": "Theme: {{name}}",
@@ -31,7 +31,7 @@
     "replay": "▶ Replay",
     "menu": "↩ Main Menu",
     "share": "📤 Share",
-    "share_text": "I just scored {{score}} (floor {{level}}) in Hanoi Tower!",
+    "share_text": "I just scored {{score}} (floor {{level}}) in Vietnam Street Stack!",
     "share_copied": "Copied to clipboard!",
     "submitting": "Submitting score…",
     "submitted": "✓ Score submitted",
@@ -43,7 +43,7 @@
     "title": "HOW TO PLAY",
     "step": "Step {{n}} / {{total}}",
     "intro": {
-      "title": "Welcome to Hanoi Tower!",
+      "title": "Welcome to Vietnam Street Stack!",
       "body": "Stack floors as high as you can — without toppling the tower. Each run takes only a few minutes; you'll pick it up fast."
     },
     "swing": {
@@ -166,7 +166,8 @@
     "section": "ACCOUNT",
     "guest": "Playing as guest",
     "linked": "Linked Google: {{email}}",
-    "link_google": "Sign in with Google to back up progress",
+    "link_google": "Sign in with Google",
+    "link_google_hint": "Back up progress to the cloud",
     "unlink": "Unlink",
     "sign_out": "Sign out",
     "link_success": "Linked with Google",

@@ -1,6 +1,6 @@
-# Tháp Hà Nội — Stack Tower
+# Tháp Phố Việt — Vietnam Street Stack
 
-Game web "Stack Tower" lấy chủ đề phố cổ Hà Nội. Người chơi canh thời điểm thả các tầng nhà đang di chuyển ngang sao cho khớp với tầng dưới; lệch bị "gọt", trượt là Game Over. Tháp càng cao càng khó (tốc độ tăng, có gió, có power-up).
+Game web "Stack Tower" với 4 chủ đề phố Việt Nam: Hà Nội, Huế, Đà Nẵng, Sài Gòn. Người chơi canh thời điểm thả các tầng nhà đang di chuyển ngang sao cho khớp với tầng dưới; lệch bị "gọt", trượt là Game Over. Tháp càng cao càng khó (tốc độ tăng, có gió, có power-up).
 
 ## Stack
 
