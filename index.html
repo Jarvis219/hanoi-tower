@@ -124,8 +124,11 @@
       }
       #app > canvas {
         display: block;
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
+        /* Bilinear browser upscale — gives smooth text. Sprites are pixel
+           art but at "normal" resolution (256-wide tiles, not 16×16) so
+           bilinear softness is barely perceptible. Switching back to
+           `pixelated` here makes text unreadable at non-integer scales. */
+        image-rendering: auto;
       }
 
       /* ─── Desktop letterbox decorations ────────────────────────────────

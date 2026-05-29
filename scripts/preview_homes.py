@@ -36,7 +36,7 @@ HOME_BLOCK_ROWS: dict[str, tuple[int, int]] = {
     "block_mid_3": (219, 63),
     "block_mid_4": (298, 65),
     "block_special": (377, 60),
-    "block_mid_5": (461, 37),
+    # block_mid_5 (row 6, rooftop terrace) dropped from rotation.
     "block_mid_6": (515, 61),
     "block_foundation": (590, 68),
 }

@@ -37,16 +37,25 @@ export class MainMenuScene extends Phaser.Scene {
     );
     sky.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT * 0.5);
 
-    // Title — large with subtle shadow
+    // Title — large with subtle shadow. Auto-shrink + word-wrap so longer
+    // translations ("VIETNAM STREET STACK") fit GAME_WIDTH without
+    // overflowing past the edges.
+    const MAX_TITLE_W = GAME_WIDTH - 40;
+    const titleStr = t('title');
+    // Heuristic: tune font size by character count.
+    // 13 chars (VI) → 46px; 20 chars (EN) → ~34px. Clamp to 28..46.
+    const dynamicFont = Math.max(28, Math.min(46, Math.round(580 / Math.max(8, titleStr.length))));
     const title = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.14, t('title'), {
+      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.14, titleStr, {
         fontFamily: 'system-ui, sans-serif',
-        fontSize: '46px',
+        fontSize: `${dynamicFont}px`,
         color: themeManager.accentHex(),
         fontStyle: 'bold',
+        align: 'center',
         stroke: '#000',
         strokeThickness: 5,
         shadow: { color: '#000', blur: 8, fill: true, offsetX: 0, offsetY: 4 },
+        wordWrap: { width: MAX_TITLE_W, useAdvancedWrap: true },
       })
       .setOrigin(0.5);
     this.tweens.add({
@@ -163,7 +172,7 @@ export class MainMenuScene extends Phaser.Scene {
       label: t('menu.settings').replace(/^⚙\s*/, ''),
       icon: '⚙',
       fontSize: 14,
-      bgColor: COLOR.neutral,
+      bgColor: COLOR.info,
       onClick: () => this.scene.start(SCENE_KEYS.Settings),
     });
 

@@ -100,7 +100,9 @@ export class SettingsScene extends Phaser.Scene {
       width: 220,
       height: 44,
       label: t('settings.reset'),
-      icon: '🗑',
+      // ⚠ pairs with the "Danger zone" section header and reads as
+      // "destructive" more clearly than the generic trash glyph.
+      icon: '⚠',
       fontSize: 14,
       bgColor: COLOR.danger,
       onClick: () => this.handleResetPress(),

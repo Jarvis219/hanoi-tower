@@ -19,3 +19,9 @@ const envFlag = (name: string): boolean => {
 };
 
 export const DEV_UNLOCK_ALL = envFlag('VITE_DEV_UNLOCK_ALL') || queryFlag('unlock');
+
+/** Inject 20+ fake leaderboard rows so the scroll viewport can be tested
+ *  without populating real Supabase data. Triggered by `?fakelb=1` URL
+ *  param or `VITE_DEV_FAKE_LEADERBOARD=true`. */
+export const DEV_FAKE_LEADERBOARD =
+  envFlag('VITE_DEV_FAKE_LEADERBOARD') || queryFlag('fakelb');

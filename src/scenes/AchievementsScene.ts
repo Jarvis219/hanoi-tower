@@ -7,11 +7,13 @@ import { saveManager } from '../systems/SaveManager';
 import { themeManager } from '../systems/ThemeManager';
 import { Button, COLOR } from '../ui/Button';
 
-const VIEW_TOP = 120;
-const VIEW_BOTTOM = GAME_HEIGHT - 100;
-const ROW_H = 64;
-const CARD_H = ROW_H - 8;
-const CARD_R = 12;
+const VIEW_TOP = 110;
+const VIEW_BOTTOM = GAME_HEIGHT - 90;
+const CARD_H = 86;
+const CARD_GAP = 10;
+const ROW_H = CARD_H + CARD_GAP;
+const CARD_R = 14;
+const CARD_PAD = 14;
 
 export class AchievementsScene extends Phaser.Scene {
   private listContainer!: Phaser.GameObjects.Container;
@@ -34,6 +36,26 @@ export class AchievementsScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(theme.menuBgColor);
     this.uiObjects = [];
 
+    // Cards first → bottom of z-stack so header/footer panels reliably
+    // overpaint any scroll bleed into title/back-button areas.
+    this.listContainer = this.add.container(0, 0);
+    ACHIEVEMENTS.forEach((a, i) => {
+      const y = i * ROW_H + CARD_GAP / 2;
+      const realState = saveManager.getAchievement(a.id);
+      const state = DEV_UNLOCK_ALL ? { unlocked: true, progress: a.target } : realState;
+      this.makeCard(a, y, CARD_H, state.unlocked, state.progress);
+    });
+
+    // Solid header panel — covers 0..VIEW_TOP so scrolled cards can never
+    // bleed into the title/counter strip.
+    const headerBg = this.add.graphics();
+    headerBg.fillStyle(theme.menuBgColor, 1);
+    headerBg.fillRect(0, 0, GAME_WIDTH, VIEW_TOP - 2);
+    headerBg.fillStyle(theme.accentColor, 0.55);
+    headerBg.fillRect(20, VIEW_TOP - 2, GAME_WIDTH - 40, 1);
+    headerBg.setDepth(10);
+    this.uiObjects.push(headerBg);
+
     const title = this.add
       .text(GAME_WIDTH / 2, 36, t('achievements.title'), {
         fontFamily: 'system-ui, sans-serif',
@@ -43,85 +65,29 @@ export class AchievementsScene extends Phaser.Scene {
         stroke: '#000',
         strokeThickness: 4,
       })
-      .setOrigin(0.5, 0);
+      .setOrigin(0.5, 0)
+      .setDepth(11);
     this.uiObjects.push(title);
 
-    const unlocked = achievementManager.unlockedCount();
+    const unlockedCount = achievementManager.unlockedCount();
     const counter = this.add
-      .text(GAME_WIDTH / 2, 88, t('achievements.count', { unlocked, total: ACHIEVEMENTS.length }), {
+      .text(GAME_WIDTH / 2, 78, t('achievements.count', { unlocked: unlockedCount, total: ACHIEVEMENTS.length }), {
         fontFamily: 'system-ui, sans-serif',
-        fontSize: '16px',
-        color: '#ffffff',
+        fontSize: '14px',
+        color: '#dddddd',
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(11);
     this.uiObjects.push(counter);
 
-    const viewH = VIEW_BOTTOM - VIEW_TOP;
-    const cardW = GAME_WIDTH - 40;
+    // Footer panel — covers VIEW_BOTTOM..GAME_HEIGHT.
+    const footerBg = this.add.graphics();
+    footerBg.fillStyle(theme.menuBgColor, 1);
+    footerBg.fillRect(0, VIEW_BOTTOM + 2, GAME_WIDTH, GAME_HEIGHT - VIEW_BOTTOM - 2);
+    footerBg.setDepth(10);
+    this.uiObjects.push(footerBg);
 
-    // List container holds all cards at world coords (0, 0..totalH).
-    // A dedicated sub-camera views only the viewport area — items outside
-    // are not rendered by that camera (no overlap with the title above).
-    this.listContainer = this.add.container(0, 0);
-    ACHIEVEMENTS.forEach((a, i) => {
-      const y = i * ROW_H + 4;
-      const realState = saveManager.getAchievement(a.id);
-      const state = DEV_UNLOCK_ALL ? { unlocked: true, progress: a.target } : realState;
-      const tint = state.unlocked ? 0xf2cc8f : 0x444444;
-      const alpha = state.unlocked ? 1 : 0.6;
-      const cx = GAME_WIDTH / 2;
-      const cy = y + CARD_H / 2;
-
-      const card = this.add.graphics();
-      const topColor = state.unlocked ? 0x2a2e4a : 0x1f2236;
-      const botColor = state.unlocked ? 0x1f2236 : 0x171a28;
-      card.fillGradientStyle(topColor, topColor, botColor, botColor, 1);
-      card.fillRoundedRect(cx - cardW / 2, y, cardW, CARD_H, CARD_R);
-      card.lineStyle(state.unlocked ? 2 : 1, tint, state.unlocked ? 0.9 : 0.4);
-      card.strokeRoundedRect(cx - cardW / 2, y, cardW, CARD_H, CARD_R);
-
-      const icon = this.add
-        .text(40, cy, a.icon, {
-          fontFamily: 'system-ui, "Segoe UI Emoji", "Apple Color Emoji", sans-serif',
-          fontSize: '28px',
-          color: state.unlocked ? '#f2cc8f' : '#777777',
-        })
-        .setOrigin(0, 0.5)
-        .setAlpha(alpha);
-      const titleText = this.add
-        .text(90, cy - 14, t(`achievements.items.${a.id}.title`), {
-          fontFamily: 'system-ui, sans-serif',
-          fontSize: '14px',
-          fontStyle: 'bold',
-          color: state.unlocked ? '#ffffff' : '#999999',
-        })
-        .setOrigin(0, 0.5)
-        .setAlpha(alpha);
-      const desc = this.add
-        .text(90, cy + 8, t(`achievements.items.${a.id}.desc`), {
-          fontFamily: 'system-ui, sans-serif',
-          fontSize: '11px',
-          color: '#cccccc',
-        })
-        .setOrigin(0, 0.5)
-        .setAlpha(alpha);
-      const progressLabel = state.unlocked
-        ? '✓'
-        : `${Math.min(state.progress, a.target)} / ${a.target}`;
-      const progress = this.add
-        .text(GAME_WIDTH - 40, cy, progressLabel, {
-          fontFamily: 'system-ui, sans-serif',
-          fontSize: '14px',
-          fontStyle: 'bold',
-          color: state.unlocked ? '#81b29a' : '#aaaaaa',
-        })
-        .setOrigin(1, 0.5);
-
-      this.listContainer.add([card, icon, titleText, desc, progress]);
-    });
-
-    // Scrollbar — rendered by main cam, drawn outside the list container.
-    this.scrollbar = this.add.graphics();
+    this.scrollbar = this.add.graphics().setDepth(9);
     this.uiObjects.push(this.scrollbar);
 
     const backBtn = new Button(this, {
@@ -135,14 +101,16 @@ export class AchievementsScene extends Phaser.Scene {
       bgColor: COLOR.neutral,
       onClick: () => this.scene.start(SCENE_KEYS.MainMenu),
     });
+    backBtn.setDepth(11);
     this.uiObjects.push(backBtn);
 
-    // Set up the dedicated list camera.
+    const viewH = VIEW_BOTTOM - VIEW_TOP;
     this.listCam = this.cameras.add(0, VIEW_TOP, GAME_WIDTH, viewH);
-    this.listCam.setBackgroundColor(0); // transparent (alpha 0)
-    // Main camera ignores the list — only listCam renders the cards.
+    // Keep the sub-camera transparent — `setBackgroundColor(0)` was painting
+    // an opaque BLACK rectangle over the viewport, hiding the main camera's
+    // theme menuBgColor. Default is transparent; just make it explicit.
+    this.listCam.transparent = true;
     this.cameras.main.ignore(this.listContainer);
-    // List camera ignores all UI (title/counter/scrollbar/back).
     this.listCam.ignore(this.uiObjects);
 
     const totalH = ACHIEVEMENTS.length * ROW_H;
@@ -150,6 +118,151 @@ export class AchievementsScene extends Phaser.Scene {
 
     this.drawScrollbar(viewH, totalH);
     this.bindScrollInput(viewH, totalH);
+  }
+
+  private makeCard(
+    a: (typeof ACHIEVEMENTS)[number],
+    y: number,
+    h: number,
+    unlocked: boolean,
+    progress: number,
+  ): void {
+    const theme = themeManager.getSelected();
+    const cardW = GAME_WIDTH - 40;
+    const x = GAME_WIDTH / 2;
+    const left = x - cardW / 2;
+    const accentHex = `#${theme.accentColor.toString(16).padStart(6, '0')}`;
+
+    // ─── Card body — gradient uses the active theme's sky for unlocked,
+    //     dark neutrals for locked (matches ThemesScene card treatment). ──
+    const card = this.add.graphics();
+    const topColor = unlocked ? theme.skyColor : 0x2a2a3a;
+    const botColor = unlocked ? this.darken(theme.skyColor, 0.55) : 0x12131e;
+    card.fillGradientStyle(topColor, topColor, botColor, botColor, 1);
+    card.fillRoundedRect(left, y, cardW, h, CARD_R);
+    const borderColor = unlocked ? theme.accentColor : 0x444455;
+    card.lineStyle(unlocked ? 2 : 1, borderColor, unlocked ? 0.9 : 0.5);
+    card.strokeRoundedRect(left, y, cardW, h, CARD_R);
+    this.listContainer.add(card);
+
+    // ─── Left vertical accent stripe ───────────────────────────────────
+    const stripe = this.add.graphics();
+    stripe.fillStyle(unlocked ? theme.accentColor : 0x444455, unlocked ? 0.85 : 0.4);
+    stripe.fillRoundedRect(left + 4, y + 4, 5, h - 8, 3);
+    this.listContainer.add(stripe);
+
+    // ─── Achievement icon (left, with subtle glow when unlocked) ───────
+    const iconX = left + CARD_PAD + 24;
+    const iconY = y + h / 2;
+    if (unlocked) {
+      const glow = this.add.graphics();
+      glow.fillStyle(theme.accentColor, 0.18);
+      glow.fillCircle(iconX, iconY, 24);
+      this.listContainer.add(glow);
+    }
+    const icon = this.add
+      .text(iconX, iconY, a.icon, {
+        fontFamily: 'system-ui, "Segoe UI Emoji", "Apple Color Emoji", sans-serif',
+        fontSize: '28px',
+        color: unlocked ? accentHex : '#666666',
+      })
+      .setOrigin(0.5)
+      .setAlpha(unlocked ? 1 : 0.55);
+    this.listContainer.add(icon);
+
+    // ─── Title + description (right of icon) ───────────────────────────
+    const textCol = iconX + 32;
+    const textW = cardW - (textCol - left) - CARD_PAD - 50;
+    // Title — stroke keeps it legible over light theme sky gradients.
+    const titleText = this.add
+      .text(textCol, y + 16, t(`achievements.items.${a.id}.title`), {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '15px',
+        fontStyle: 'bold',
+        color: unlocked ? '#ffffff' : '#888888',
+        stroke: '#000',
+        strokeThickness: 3,
+        wordWrap: { width: textW },
+      })
+      .setOrigin(0, 0);
+    this.listContainer.add(titleText);
+
+    const descText = this.add
+      .text(textCol, y + 36, t(`achievements.items.${a.id}.desc`), {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '11px',
+        color: unlocked ? '#ffffff' : '#777777',
+        stroke: '#000',
+        strokeThickness: 2,
+        wordWrap: { width: textW },
+        lineSpacing: 2,
+      })
+      .setOrigin(0, 0)
+      .setAlpha(0.92);
+    this.listContainer.add(descText);
+
+    // ─── Top-right circular badge (matches ThemesScene) ────────────────
+    const badgeCx = left + cardW - 22;
+    const badgeCy = y + 22;
+    if (unlocked) {
+      const ring = this.add.graphics();
+      ring.fillStyle(0x81b29a, 1);
+      ring.fillCircle(badgeCx, badgeCy, 13);
+      ring.lineStyle(2, 0xffffff, 0.85);
+      ring.strokeCircle(badgeCx, badgeCy, 13);
+      const check = this.add
+        .text(badgeCx, badgeCy, '✓', {
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: '16px',
+          color: '#ffffff',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5);
+      this.listContainer.add([ring, check]);
+    } else {
+      const lockIcon = this.add
+        .text(badgeCx, badgeCy, '🔒', {
+          fontFamily: 'system-ui, "Segoe UI Emoji", "Apple Color Emoji", sans-serif',
+          fontSize: '16px',
+          color: '#888888',
+        })
+        .setOrigin(0.5);
+      this.listContainer.add(lockIcon);
+    }
+
+    // ─── Progress bar (only when locked) — label sits INLINE to the
+    //     right of the bar instead of below it so the whole row clears
+    //     the card bottom with ~14px breathing room. ────────────────────
+    if (!unlocked) {
+      const ratio = Math.min(1, progress / a.target);
+      const labelW = 56;
+      const barX = textCol;
+      const barH = 8;
+      const barW = textW - labelW - 8;
+      const barY = y + h - 22;
+      const track = this.add.graphics();
+      track.fillStyle(0x000000, 0.45);
+      track.fillRoundedRect(barX, barY, barW, barH, 4);
+      const fill = this.add.graphics();
+      fill.fillStyle(theme.accentColor, 0.9);
+      fill.fillRoundedRect(barX, barY, Math.max(2, barW * ratio), barH, 4);
+      const progLabel = this.add
+        .text(
+          barX + barW + 8,
+          barY + barH / 2,
+          `${Math.min(progress, a.target)} / ${a.target}`,
+          {
+            fontFamily: 'system-ui, sans-serif',
+            fontSize: '11px',
+            color: '#ffffff',
+            fontStyle: 'bold',
+            stroke: '#000',
+            strokeThickness: 2,
+          },
+        )
+        .setOrigin(0, 0.5);
+      this.listContainer.add([track, fill, progLabel]);
+    }
   }
 
   private drawScrollbar(viewH: number, totalH: number): void {
@@ -202,6 +315,13 @@ export class AchievementsScene extends Phaser.Scene {
         refresh();
       },
     );
+  }
+
+  private darken(color: number, amt: number): number {
+    const r = Math.max(0, ((color >> 16) & 0xff) * (1 - amt));
+    const g = Math.max(0, ((color >> 8) & 0xff) * (1 - amt));
+    const b = Math.max(0, (color & 0xff) * (1 - amt));
+    return ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
   }
 
   private flashScrollbar(): void {
