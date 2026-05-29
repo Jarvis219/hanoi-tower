@@ -97,7 +97,9 @@ export class HUDScene extends Phaser.Scene {
 
   private buildPauseButton(): Phaser.GameObjects.Container {
     const size = 44;
-    const container = this.add.container(GAME_WIDTH - 20 - size / 2, 20 + size / 2).setScrollFactor(0);
+    const container = this.add
+      .container(GAME_WIDTH - 20 - size / 2, 20 + size / 2)
+      .setScrollFactor(0);
     const bg = this.add.graphics();
     bg.fillStyle(0x000000, 0.55);
     bg.fillRoundedRect(-size / 2, -size / 2, size, size, 12);

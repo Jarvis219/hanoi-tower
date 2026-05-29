@@ -73,16 +73,34 @@ describe('ThemeManager', () => {
   it('only Hanoi unlocked at fresh save', async () => {
     const { themeManager } = await import('../src/systems/ThemeManager');
     expect(themeManager.isUnlocked('hanoi')).toBe(true);
-    expect(themeManager.isUnlocked('saigon')).toBe(false);
     expect(themeManager.isUnlocked('hue')).toBe(false);
+    expect(themeManager.isUnlocked('danang')).toBe(false);
+    expect(themeManager.isUnlocked('saigon')).toBe(false);
   });
 
-  it('Saigon unlocks at highLevel 50', async () => {
+  it('Hue unlocks at highLevel 50', async () => {
     const { saveManager } = await import('../src/systems/SaveManager');
     const { themeManager } = await import('../src/systems/ThemeManager');
     saveManager.recordRun(0, 50, 'classic');
+    expect(themeManager.isUnlocked('hue')).toBe(true);
+    expect(themeManager.isUnlocked('danang')).toBe(false);
+    expect(themeManager.isUnlocked('saigon')).toBe(false);
+  });
+
+  it('Da Nang unlocks at highLevel 100', async () => {
+    const { saveManager } = await import('../src/systems/SaveManager');
+    const { themeManager } = await import('../src/systems/ThemeManager');
+    saveManager.recordRun(0, 100, 'classic');
+    expect(themeManager.isUnlocked('hue')).toBe(true);
+    expect(themeManager.isUnlocked('danang')).toBe(true);
+    expect(themeManager.isUnlocked('saigon')).toBe(false);
+  });
+
+  it('Saigon unlocks at highLevel 150', async () => {
+    const { saveManager } = await import('../src/systems/SaveManager');
+    const { themeManager } = await import('../src/systems/ThemeManager');
+    saveManager.recordRun(0, 150, 'classic');
     expect(themeManager.isUnlocked('saigon')).toBe(true);
-    expect(themeManager.isUnlocked('hue')).toBe(false);
   });
 
   it('select() returns false for locked theme and keeps Hanoi selected', async () => {

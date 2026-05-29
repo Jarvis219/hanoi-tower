@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import { ATLAS_FRAMES, SPRITE_SHEET_KEY } from '../config/atlas';
+import { ATLAS_FRAMES, SPRITE_SHEET_KEY, resolveBlockSprite } from '../config/atlas';
 import type { AtlasFrameKey } from '../config/atlas';
+import { themeManager } from '../systems/ThemeManager';
 
 type ReleaseHandler = (d: FallingDebris) => void;
 
@@ -25,7 +26,19 @@ export class FallingDebris extends Phaser.GameObjects.Container {
     this.onRelease = onRelease;
     this.setSize(width, height);
 
-    if (spriteKey && scene.textures.exists(SPRITE_SHEET_KEY) && ATLAS_FRAMES[spriteKey]) {
+    const resolved = spriteKey
+      ? resolveBlockSprite(spriteKey, themeManager.getSelected().id)
+      : null;
+    const themedReady =
+      resolved &&
+      scene.textures.exists(resolved.textureKey) &&
+      scene.textures.get(resolved.textureKey).has(resolved.frameKey);
+
+    if (themedReady && resolved) {
+      this.img = scene.add.image(0, 0, resolved.textureKey, resolved.frameKey);
+      this.img.setDisplaySize(width, height);
+      this.add(this.img);
+    } else if (spriteKey && scene.textures.exists(SPRITE_SHEET_KEY) && ATLAS_FRAMES[spriteKey]) {
       this.img = scene.add.image(0, 0, SPRITE_SHEET_KEY, spriteKey);
       this.img.setDisplaySize(width, height);
       this.add(this.img);

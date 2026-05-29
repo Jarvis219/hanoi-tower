@@ -88,6 +88,62 @@ python3 scripts/inspect_sections.py   # crop sections with pixel grid for manual
 python3 scripts/generate_pwa_icons.py # regen PWA icons from sprite sheet
 ```
 
+## Backend (Supabase + Leaderboard + Ads)
+
+The game runs fully offline (localStorage-only) when `VITE_SUPABASE_*` env vars
+are missing. Filling them lights up cloud sync, the global leaderboard
+(Classic / Daily × Daily / Weekly / All-time), Google sign-in, and (optionally)
+AdSense. **No credit card required** — Supabase's free tier covers everything.
+
+### 1. Supabase setup
+
+Two paths — use the **automated script** (recommended) or do it by hand.
+
+**Option A — Automated:**
+
+```bash
+# 1. Install the Supabase CLI
+brew install supabase/tap/supabase   # or: npm i -g supabase
+
+# 2. Create a new project at https://supabase.com/dashboard/new (free, no card).
+#    Copy the 20-char project ref from the URL.
+
+# 3. Run the setup script with that ref:
+./scripts/setup-supabase.sh <project-ref>
+```
+
+The script will: `supabase login` → `link --project-ref` → write `.env.local` (you paste the anon key once) → `supabase db push` (runs the migration in `supabase/migrations/`). It then prints the remaining dashboard steps (enable Anonymous + Google providers).
+
+**Option B — Manual:**
+
+1. Create a project at https://supabase.com/dashboard/new — region closest to your audience.
+2. Open `Settings → API` → copy **Project URL** + **anon public key** into `.env.local`.
+3. Open `SQL Editor`, paste the contents of `supabase/migrations/20260529000001_initial.sql`, click Run.
+4. Open `Authentication → Providers`:
+   - Enable **Anonymous sign-ins** (toggle on).
+   - Enable **Google** — paste OAuth client ID + secret (from https://console.cloud.google.com/apis/credentials). Add `https://<project-ref>.supabase.co/auth/v1/callback` as authorised redirect URI.
+5. Open `Authentication → URL Configuration` → add `http://localhost:5173` (dev) and your Vercel domain (prod) to **Site URL** + **Redirect URLs**.
+
+### 2. AdSense (optional)
+
+1. Sign up at https://www.google.com/adsense — submit the deployed domain for review.
+2. Create a **Banner** ad unit and an **In-article / Display** unit (used as the interstitial).
+3. Fill `VITE_ADSENSE_PUBLISHER_ID`, `VITE_ADSENSE_BANNER_SLOT`, `VITE_ADSENSE_INTERSTITIAL_SLOT` in `.env.local`.
+4. Replace the publisher ID in `public/ads.txt` so AdSense can verify domain ownership.
+5. On first launch the game shows a consent banner; reject = ad scripts never load.
+
+### Vercel env vars
+
+Add the same `VITE_*` keys to Vercel:
+
+```bash
+vercel env add VITE_SUPABASE_URL production
+vercel env add VITE_SUPABASE_ANON_KEY production
+# … then every VITE_ADSENSE_* var if you enabled ads
+```
+
+Mirror them to `Preview` if you want preview deploys to talk to the same Supabase project.
+
 ## Deploy
 
 ### Vercel

@@ -1,6 +1,14 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../config/Constants';
-import { SPRITE_SHEET_KEY, SPRITE_SHEET_PATH, registerAtlasFrames } from '../config/atlas';
+import {
+  HOME_SHEET_KEY,
+  HOME_SHEET_PATH,
+  SPRITE_SHEET_KEY,
+  SPRITE_SHEET_PATH,
+  registerAtlasFrames,
+  registerHomeAtlasFrames,
+} from '../config/atlas';
+import { consentManager } from '../systems/ConsentManager';
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -10,6 +18,7 @@ export class PreloadScene extends Phaser.Scene {
   preload(): void {
     this.drawProgressBar();
     this.load.image(SPRITE_SHEET_KEY, SPRITE_SHEET_PATH);
+    this.load.image(HOME_SHEET_KEY, HOME_SHEET_PATH);
     // Sky decorations (Kenney CC0 background-elements pack)
     for (let i = 1; i <= 9; i += 1) {
       this.load.image(`cloud_${i}`, `assets/images/sky/cloud${i}.png`);
@@ -22,11 +31,23 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('shop_brick_2', 'assets/images/buildings/shop_brick_2.png');
     this.load.image('shop_yellow_1', 'assets/images/buildings/shop_yellow_1.png');
     this.load.image('shop_yellow_2', 'assets/images/buildings/shop_yellow_2.png');
-    this.load.image('skyline_distant', 'assets/images/buildings/skyline_distant.png');
+    // Per-theme skylines for the distant parallax layer.
+    this.load.image('skyline_hanoi', 'assets/images/buildings/skyline_hanoi.png');
+    this.load.image('skyline_hue', 'assets/images/buildings/skyline_hue.png');
+    this.load.image('skyline_danang', 'assets/images/buildings/skyline_danang.png');
+    this.load.image('skyline_saigon', 'assets/images/buildings/skyline_saigon.png');
   }
 
   create(): void {
     registerAtlasFrames(this.textures);
+    registerHomeAtlasFrames(this.textures);
+    // Route to consent banner if ads are configured but the user hasn't decided yet.
+    // Otherwise drop into the menu — Tutorial gate is handled by MainMenu.
+    const adsConfigured = Boolean(import.meta.env.VITE_ADSENSE_PUBLISHER_ID);
+    if (adsConfigured && !consentManager.hasDecided()) {
+      this.scene.start(SCENE_KEYS.ConsentBanner);
+      return;
+    }
     this.scene.start(SCENE_KEYS.MainMenu);
   }
 

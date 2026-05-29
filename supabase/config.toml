@@ -1,0 +1,19 @@
+# Supabase config — `supabase init` writes this. We keep the slim subset that
+# documents intent; per-project values (project_id, db port, etc.) come from
+# `supabase link --project-ref <ref>`.
+
+project_id = "thap-ha-noi"
+
+[auth]
+# Allow anonymous sign-ins — required for the "play without account" flow.
+enable_anonymous_sign_ins = true
+
+[auth.email]
+enable_signup = false
+
+[auth.external.google]
+enabled = true
+# Fill these via the Supabase dashboard (Auth → Providers → Google) or the CLI
+# env vars SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID + _SECRET.
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret    = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"

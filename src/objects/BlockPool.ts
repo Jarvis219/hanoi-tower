@@ -17,13 +17,7 @@ export class DebrisPool {
     this.maxSize = maxSize;
   }
 
-  public spawn(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    color: number,
-  ): FallingDebris {
+  public spawn(x: number, y: number, width: number, height: number, color: number): FallingDebris {
     const reused = this.pool.pop();
     if (reused) {
       reused.reset(x, y, width, height, color);

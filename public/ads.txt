@@ -1,0 +1,4 @@
+# AdSense ownership verification.
+# Replace pub-0000000000000000 with your actual publisher ID before going live.
+# Format: domain, publisher_id, relationship, certification_authority_id
+google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

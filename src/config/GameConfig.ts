@@ -11,6 +11,8 @@ import { AchievementsScene } from '../scenes/AchievementsScene';
 import { SettingsScene } from '../scenes/SettingsScene';
 import { ThemesScene } from '../scenes/ThemesScene';
 import { TutorialScene } from '../scenes/TutorialScene';
+import { LeaderboardScene } from '../scenes/LeaderboardScene';
+import { ConsentBannerScene } from '../scenes/ConsentBannerScene';
 
 export const createGameConfig = (parent: string): Phaser.Types.Core.GameConfig => ({
   type: Phaser.AUTO,
@@ -45,5 +47,7 @@ export const createGameConfig = (parent: string): Phaser.Types.Core.GameConfig =
     AchievementsScene,
     SettingsScene,
     ThemesScene,
+    LeaderboardScene,
+    ConsentBannerScene,
   ],
 });

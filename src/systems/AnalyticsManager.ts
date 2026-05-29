@@ -27,7 +27,6 @@ class AnalyticsManagerImpl {
     // No-op stub. Replace with Plausible / GA / custom endpoint when ready.
     // Keep logs out of the console in production by checking import.meta.env.DEV.
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
       console.debug('[analytics]', event, props);
     }
   }

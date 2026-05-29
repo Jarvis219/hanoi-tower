@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { GAME_WIDTH } from '../config/Constants';
 import { ATLAS_FRAMES, MID_BLOCK_KEYS, SPRITE_SHEET_KEY } from '../config/atlas';
 import type { AtlasFrameKey } from '../config/atlas';
+import { themeManager } from '../systems/ThemeManager';
+import type { ThemeId } from '../types/SaveData';
 
 /**
  * Ground-level streetscape — single row that mixes external shophouse
@@ -27,13 +29,7 @@ type BuildingKind =
   | { source: 'atlas'; key: AtlasFrameKey; stories: 1 | 2 };
 
 const TINT_PALETTE = [
-  0xffffff,
-  0xf3c884,
-  0xe6a574,
-  0xb9d6e6,
-  0xc8e6cd,
-  0xefc8d6,
-  0xd9d2b5,
+  0xffffff, 0xf3c884, 0xe6a574, 0xb9d6e6, 0xc8e6cd, 0xefc8d6, 0xd9d2b5,
 ] as const;
 
 const STREET_PROPS: AtlasFrameKey[] = [
@@ -45,6 +41,18 @@ const STREET_PROPS: AtlasFrameKey[] = [
 
 const ROAD_COLOR = 0x222428;
 const PAVEMENT_COLOR = 0x4a4d54;
+
+/**
+ * Per-theme distant-skyline texture key + tint. Each variant uses a different
+ * silhouette shape and color matching the theme's palette. Textures are
+ * pre-generated CC0-derived PNGs in public/assets/images/buildings/.
+ */
+const SKYLINE_BY_THEME: Record<ThemeId, { key: string; tint: number; scale: number }> = {
+  hanoi: { key: 'skyline_hanoi', tint: 0x5e4e78, scale: 0.55 },
+  hue: { key: 'skyline_hue', tint: 0x6f5b9c, scale: 0.55 },
+  danang: { key: 'skyline_danang', tint: 0x3c788c, scale: 0.55 },
+  saigon: { key: 'skyline_saigon', tint: 0xa05a64, scale: 0.55 },
+};
 
 export class Streetscape {
   private readonly scene: Phaser.Scene;
@@ -60,24 +68,25 @@ export class Streetscape {
     this.sprinkleProps(groundY);
   }
 
-  /** Tiled pastel silhouette far behind, very faded — adds depth without competing. */
+  /** Theme-aware distant skyline — different silhouette per theme. */
   private buildSkylineFar(groundY: number): void {
-    if (!this.scene.textures.exists('skyline_distant')) return;
-    const tex = this.scene.textures.get('skyline_distant').getSourceImage() as
+    const theme = themeManager.getSelected().id;
+    const variant = SKYLINE_BY_THEME[theme] ?? SKYLINE_BY_THEME.hanoi;
+    if (!this.scene.textures.exists(variant.key)) return;
+    const tex = this.scene.textures.get(variant.key).getSourceImage() as
       | HTMLImageElement
       | HTMLCanvasElement;
-    const scale = 0.7;
-    const w = tex.width * scale;
+    const w = tex.width * variant.scale;
     let x = -w;
     while (x < GAME_WIDTH + w) {
       const img = this.scene.add
-        .image(x, groundY - 8, 'skyline_distant')
+        .image(x, groundY - 8, variant.key)
         .setOrigin(0, 1)
-        .setScale(scale)
+        .setScale(variant.scale)
         .setDepth(-820)
         .setScrollFactor(0.45, 0.45)
         .setAlpha(0.55)
-        .setTint(0x7c6f9e);
+        .setTint(variant.tint);
       this.props.push(img);
       x += w - 1;
     }
@@ -88,7 +97,12 @@ export class Streetscape {
     // ~50/50 external vs atlas, but never two identical in a row.
     const useExternal = Math.random() < 0.55;
     if (useExternal) {
-      const candidates = ['shop_brick_1', 'shop_brick_2', 'shop_yellow_1', 'shop_yellow_2'] as const;
+      const candidates = [
+        'shop_brick_1',
+        'shop_brick_2',
+        'shop_yellow_1',
+        'shop_yellow_2',
+      ] as const;
       let pick = candidates[Phaser.Math.Between(0, candidates.length - 1)]!;
       if (prev?.source === 'external' && prev.key === pick) {
         pick = candidates[(candidates.indexOf(pick) + 1) % candidates.length]!;

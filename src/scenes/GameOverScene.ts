@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../config/Constants';
+import { adsManager } from '../systems/AdsManager';
+import { supabaseEnabled } from '../systems/supabase/SupabaseClient';
+import { leaderboardService } from '../systems/supabase/LeaderboardService';
 import { t } from '../systems/I18nManager';
 import { themeManager } from '../systems/ThemeManager';
 import { Button, COLOR } from '../ui/Button';
@@ -12,6 +15,8 @@ interface GameOverData {
   highScore?: number;
   newHighScore?: boolean;
   mode?: GameMode;
+  runDurationMs?: number;
+  perfects?: number;
 }
 
 export class GameOverScene extends Phaser.Scene {
@@ -20,7 +25,10 @@ export class GameOverScene extends Phaser.Scene {
   private highScore = 0;
   private newHighScore = false;
   private mode: GameMode = 'classic';
+  private runDurationMs = 0;
+  private perfects = 0;
   private shareBtn?: Button;
+  private rankText?: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: SCENE_KEYS.GameOver });
@@ -32,6 +40,8 @@ export class GameOverScene extends Phaser.Scene {
     this.highScore = data.highScore ?? 0;
     this.newHighScore = data.newHighScore ?? false;
     this.mode = data.mode ?? 'classic';
+    this.runDurationMs = data.runDurationMs ?? 0;
+    this.perfects = data.perfects ?? 0;
   }
 
   public create(): void {
@@ -97,6 +107,22 @@ export class GameOverScene extends Phaser.Scene {
       })
       .setOrigin(0.5, 0);
 
+    this.rankText = this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.55, supabaseEnabled ? t('gameover.submitting') : '', {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '13px',
+        color: '#cccccc',
+        align: 'center',
+      })
+      .setOrigin(0.5, 0);
+
+    void this.submitAndShowRank();
+    // Fire an interstitial gate ~700ms after the score is on screen, so users
+    // see their result first. Frequency-capped inside AdsManager.
+    this.time.delayedCall(800, () => {
+      void adsManager.maybeShowInterstitial();
+    });
+
     const btnW = 260;
     let y = GAME_HEIGHT * 0.66;
     const gap = 12;
@@ -138,6 +164,47 @@ export class GameOverScene extends Phaser.Scene {
     });
   }
 
+  private async submitAndShowRank(): Promise<void> {
+    if (!supabaseEnabled || !this.rankText) {
+      this.rankText?.setText('');
+      return;
+    }
+    const result = await leaderboardService.submitScore({
+      score: this.score,
+      level: this.level,
+      mode: this.mode,
+      runDurationMs: this.runDurationMs,
+      perfects: this.perfects,
+    });
+    if (!this.rankText) return;
+    if (!result.ok) {
+      const reason = result.reason ?? 'unknown';
+      // rate_limited (local or server): we already have a submission for this
+      // mode in the window — don't surface as an error, treat as "saved".
+      if (reason === 'rate_limited_local' || reason.includes('rate_limited')) {
+        this.rankText.setText(t('gameover.submitted'));
+        return;
+      }
+      this.rankText.setText(
+        reason === 'offline' || reason === 'unavailable'
+          ? t('gameover.submit_offline')
+          : t('gameover.submit_failed'),
+      );
+      return;
+    }
+    // skipped-not-best: score wasn't a new PB; show neutral "submitted" rather
+    // than a failure indicator.
+    if (result.reason === 'skipped-not-best') {
+      this.rankText.setText(t('gameover.submitted'));
+      return;
+    }
+    if (result.rank) {
+      this.rankText.setText(t('gameover.world_rank', { rank: result.rank.alltime }));
+    } else {
+      this.rankText.setText(t('gameover.submitted'));
+    }
+  }
+
   private async handleShare(): Promise<void> {
     if (!this.shareBtn) return;
     const canvas = (this.game.canvas as HTMLCanvasElement) ?? undefined;
@@ -147,7 +214,9 @@ export class GameOverScene extends Phaser.Scene {
     });
     if (result.method === 'clipboard' && result.ok) {
       this.shareBtn.setLabel(t('gameover.share_copied'));
-      this.time.delayedCall(2000, () => this.shareBtn?.setLabel(t('gameover.share').replace(/^📤\s*/, '')));
+      this.time.delayedCall(2000, () =>
+        this.shareBtn?.setLabel(t('gameover.share').replace(/^📤\s*/, '')),
+      );
     }
   }
 }
