@@ -11,15 +11,20 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Tháp Phố Việt — Stack Tower</title>
 
-    <!-- Open Graph / Facebook / LinkedIn -->
+    <!-- Open Graph / Facebook / LinkedIn — absolute URLs required by legacy
+         scrapers (esp. Facebook's). The `?v=2` query busts any previously
+         cached preview on platforms that key by exact URL. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Tháp Phố Việt" />
+    <meta property="og:url" content="https://hanoi-tower-lilac.vercel.app/" />
     <meta property="og:title" content="Tháp Phố Việt — Stack Tower" />
     <meta
       property="og:description"
       content="Xếp tháp phố cổ Việt Nam — Hà Nội, Huế, Đà Nẵng, Sài Gòn. Càng cao càng vui, BXH toàn cầu."
     />
-    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image" content="https://hanoi-tower-lilac.vercel.app/og-image.png?v=2" />
+    <meta property="og:image:secure_url" content="https://hanoi-tower-lilac.vercel.app/og-image.png?v=2" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Tháp Phố Việt — Stack Tower game preview" />
@@ -28,12 +33,13 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://hanoi-tower-lilac.vercel.app/" />
     <meta name="twitter:title" content="Tháp Phố Việt — Stack Tower" />
     <meta
       name="twitter:description"
       content="Xếp tháp phố cổ Việt Nam — Hà Nội, Huế, Đà Nẵng, Sài Gòn. Càng cao càng vui, BXH toàn cầu."
     />
-    <meta name="twitter:image" content="/og-image.png" />
+    <meta name="twitter:image" content="https://hanoi-tower-lilac.vercel.app/og-image.png?v=2" />
     <meta name="twitter:image:alt" content="Tháp Phố Việt — Stack Tower game preview" />
     <style>
       :root {
