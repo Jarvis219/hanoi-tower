@@ -7,9 +7,17 @@ type Listener = (user: User | null) => void;
 class AuthManager {
   private user: User | null = null;
   private listeners = new Set<Listener>();
+  private pendingLinkError: string | null = null;
 
   public async init(): Promise<void> {
     if (!supabaseEnabled || !supabase) return;
+
+    // Capture link-redirect errors before Supabase strips them. When
+    // linkIdentity fails (e.g. identity_already_exists), Supabase appends the
+    // error to the URL hash and returns the user to the app. We stash it here
+    // so the Settings UI can surface a recovery prompt; URL is cleaned right
+    // away so a refresh doesn't re-trigger anything.
+    this.pendingLinkError = this.extractLinkError();
 
     // Subscribe to auth events for future updates (link Google, sign-out).
     supabase.auth.onAuthStateChange((_event, session) => {
@@ -35,6 +43,35 @@ class AuthManager {
     } catch (err) {
       console.warn('[Auth] Anonymous sign-in threw:', err);
     }
+  }
+
+  /** Read `error_code` from URL hash + search, then strip the params so a
+   *  page refresh doesn't keep showing the error. */
+  private extractLinkError(): string | null {
+    if (typeof window === 'undefined') return null;
+    const hash = window.location.hash.replace(/^#/, '');
+    const search = window.location.search.replace(/^\?/, '');
+    const params = new URLSearchParams(`${hash}&${search}`);
+    const code = params.get('error_code');
+    if (code) {
+      // Clean URL so refresh starts fresh.
+      const clean = window.location.pathname;
+      window.history.replaceState(null, '', clean);
+    }
+    return code;
+  }
+
+  /** Set by `init()` when a Supabase auth redirect returned an error code in
+   *  the URL hash (e.g. 'identity_already_exists'). Cleared after the UI
+   *  handles it via `consumePendingLinkError()`. */
+  public get pendingLinkErrorCode(): string | null {
+    return this.pendingLinkError;
+  }
+
+  public consumePendingLinkError(): string | null {
+    const v = this.pendingLinkError;
+    this.pendingLinkError = null;
+    return v;
   }
 
   public get currentUser(): User | null {
@@ -76,6 +113,23 @@ class AuthManager {
     }
     try {
       const { error } = await supabase.auth.linkIdentity({
+        provider: 'google',
+        options: { redirectTo: window.location.origin },
+      });
+      if (error) return { ok: false, error: error.message };
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: (err as Error).message };
+    }
+  }
+
+  /** OAuth sign-in (not link). Replaces the current anonymous session with
+   *  whichever Supabase user owns the chosen Google identity. Used as the
+   *  recovery path when `linkIdentity` returned `identity_already_exists`. */
+  public async signInWithGoogle(): Promise<{ ok: boolean; error?: string }> {
+    if (!supabaseEnabled || !supabase) return { ok: false, error: 'auth-unavailable' };
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: window.location.origin },
       });
