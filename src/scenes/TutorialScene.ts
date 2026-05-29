@@ -8,7 +8,16 @@ import { Button, COLOR } from '../ui/Button';
 
 type StepKey = 'intro' | 'swing' | 'drop' | 'perfect' | 'slice' | 'powerups' | 'hud' | 'themes';
 
-const STEPS: StepKey[] = ['intro', 'swing', 'drop', 'perfect', 'slice', 'powerups', 'hud', 'themes'];
+const STEPS: StepKey[] = [
+  'intro',
+  'swing',
+  'drop',
+  'perfect',
+  'slice',
+  'powerups',
+  'hud',
+  'themes',
+];
 
 const DEMO_X = GAME_WIDTH / 2;
 const DEMO_Y = GAME_HEIGHT * 0.46;
@@ -243,13 +252,25 @@ export class TutorialScene extends Phaser.Scene {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────
-  private block(x: number, y: number, w: number, h: number, color: number): Phaser.GameObjects.Rectangle {
+  private block(
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    color: number,
+  ): Phaser.GameObjects.Rectangle {
     const r = this.add.rectangle(x, y, w, h, color).setStrokeStyle(2, 0x000000, 0.3);
     this.demoGroup.add(r);
     return r;
   }
 
-  private label(x: number, y: number, text: string, color = '#ffffff', size = 12): Phaser.GameObjects.Text {
+  private label(
+    x: number,
+    y: number,
+    text: string,
+    color = '#ffffff',
+    size = 12,
+  ): Phaser.GameObjects.Text {
     const t2 = this.add
       .text(x, y, text, {
         fontFamily: 'system-ui, "Segoe UI Emoji", "Apple Color Emoji", sans-serif',
@@ -660,12 +681,9 @@ export class TutorialScene extends Phaser.Scene {
     items.forEach((it, i) => {
       const x = startX + i * gap;
       // Block body with rounded corners + drop shadow
-      const shadow = this.add
-        .rectangle(x, cy + 4, 56, 56, 0x000000, 0.35);
+      const shadow = this.add.rectangle(x, cy + 4, 56, 56, 0x000000, 0.35);
       this.demoGroup.add(shadow);
-      const blk = this.add
-        .rectangle(x, cy, 56, 56, it.color)
-        .setStrokeStyle(2, 0x000000, 0.4);
+      const blk = this.add.rectangle(x, cy, 56, 56, it.color).setStrokeStyle(2, 0x000000, 0.4);
       this.demoGroup.add(blk);
 
       // Floating badge icon ABOVE the block — bobs continuously, lag per item
@@ -691,9 +709,7 @@ export class TutorialScene extends Phaser.Scene {
       });
 
       // Glow ring around block — pulse
-      const ring = this.add
-        .circle(x, cy, 34, it.color, 0)
-        .setStrokeStyle(2, it.color, 0.7);
+      const ring = this.add.circle(x, cy, 34, it.color, 0).setStrokeStyle(2, it.color, 0.7);
       this.demoGroup.add(ring);
       this.tweens.add({
         targets: ring,
@@ -756,8 +772,7 @@ export class TutorialScene extends Phaser.Scene {
     });
 
     // Pause button — subtle hover scale
-    const pauseShadow = this.add
-      .rectangle(cx + 170, cy + 4, 38, 38, 0x000000, 0.35);
+    const pauseShadow = this.add.rectangle(cx + 170, cy + 4, 38, 38, 0x000000, 0.35);
     this.demoGroup.add(pauseShadow);
     const pause = this.add
       .rectangle(cx + 170, cy, 38, 38, 0x3d405b)
@@ -795,28 +810,37 @@ export class TutorialScene extends Phaser.Scene {
         blockColors: [0xf3c884, 0xe6a574],
       },
       {
-        name: 'Sài Gòn',
-        floor: '50',
-        sky: 0xff8c69,
-        bg: 0x2a1620,
-        accent: '#ff9d6b',
-        icon: '🌅',
-        blockColors: [0xffd9a0, 0xff9d6b],
-      },
-      {
         name: 'Huế',
-        floor: '100',
+        floor: '50',
         sky: 0x6f5b9c,
         bg: 0x1a1430,
         accent: '#c9a8ff',
         icon: '🌙',
         blockColors: [0xd9c8ff, 0x9d8cd6],
       },
+      {
+        name: 'Đà Nẵng',
+        floor: '100',
+        sky: 0x6cc3d1,
+        bg: 0x0f2530,
+        accent: '#7adef0',
+        icon: '🌊',
+        blockColors: [0xc8eef7, 0x6cc3d1],
+      },
+      {
+        name: 'Sài Gòn',
+        floor: '150',
+        sky: 0xff8c69,
+        bg: 0x2a1620,
+        accent: '#ff9d6b',
+        icon: '🌅',
+        blockColors: [0xffd9a0, 0xff9d6b],
+      },
     ];
 
-    const cardW = 100;
+    const cardW = 96;
     const cardH = 130;
-    const gap = 16;
+    const gap = 10;
     const startX = cx - ((themes.length - 1) * (cardW + gap)) / 2;
 
     themes.forEach((th, i) => {

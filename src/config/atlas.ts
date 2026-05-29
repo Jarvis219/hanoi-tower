@@ -1,3 +1,5 @@
+import type { ThemeId } from '../types/SaveData';
+
 /**
  * Sprite atlas — manually curated coordinates pointing into `sprites-2.png`.
  * Generated/verified via `scripts/preview_atlas.py`.
@@ -6,6 +8,18 @@
 
 export const SPRITE_SHEET_KEY = 'sprites';
 export const SPRITE_SHEET_PATH = 'assets/images/sprites/sprites-2.png';
+
+/**
+ * `homes.png` — themed shophouse / apartment block art, organized as a 4×N
+ * grid (4 theme columns × N row types). Used to swap the in-game tower
+ * blocks based on the player's selected theme.
+ *
+ * Columns are NOT evenly spaced — each theme has its own x offset + width
+ * (see `HOME_THEME_RECT`). Y bands use the union of opaque content across all
+ * themes so Hue's taller curved roofs aren't clipped.
+ */
+export const HOME_SHEET_KEY = 'home';
+export const HOME_SHEET_PATH = 'assets/images/sprites/homes.png';
 
 export interface AtlasFrame {
   x: number;
@@ -121,4 +135,95 @@ export const registerAtlasFrames = (textures: Phaser.Textures.TextureManager): v
     if (tex.has(name)) continue;
     tex.add(name, 0, frame.x, frame.y, frame.w, frame.h);
   }
+};
+
+// ────────────────────────────────────────────────────────────────────────
+// Themed block frames (home.png)
+// ────────────────────────────────────────────────────────────────────────
+
+/**
+ * Per-theme tight column rectangle inside homes.png — different x/width for
+ * each theme since the source art doesn't use uniform column spacing.
+ */
+const HOME_THEME_RECT: Partial<Record<ThemeId, { x: number; w: number }>> = {
+  hanoi: { x: 75, w: 189 },
+  hue: { x: 299, w: 197 },
+  danang: { x: 531, w: 189 },
+  saigon: { x: 760, w: 198 },
+};
+
+/**
+ * Y bands tight to rows where ≥20% of pixels are opaque (union across all
+ * themes). Tighter than max-alpha bounds — drops the 4-5 transparent rows
+ * at the top of each frame so blocks stack without sky-gap leak.
+ * Missing block keys fall back to sprites-2.png.
+ */
+const HOME_BLOCK_ROWS: Partial<Record<AtlasFrameKey, { y: number; h: number }>> = {
+  block_mid_1: { y: 57, h: 66 }, // top floor with awning roof
+  block_mid_2: { y: 138, h: 65 }, // balcony with plants
+  block_mid_3: { y: 219, h: 63 }, // mid floor with shutters / windows
+  block_mid_4: { y: 298, h: 65 }, // red lantern / lit windows
+  block_special: { y: 377, h: 60 }, // storefront with awning sign
+  block_mid_5: { y: 461, h: 37 }, // rooftop terrace (tight to water tank)
+  block_mid_6: { y: 515, h: 61 }, // secondary storefront sign
+  block_foundation: { y: 590, h: 68 }, // large foundation sign
+};
+
+/**
+ * Per-theme overrides. Đà Nẵng's source art has the awning-sign storefront
+ * and the lantern apartment swapped relative to Hanoi/Hue/Saigon — its
+ * "MI QUẢNG ĐÀ NẴNG" sign sits at the row that's an apartment in other themes.
+ * Override the y/h for just those two keys so the frame names still mean
+ * the same thing visually (block_special = storefront with sign).
+ */
+const HOME_BLOCK_ROW_OVERRIDES: Partial<
+  Record<ThemeId, Partial<Record<AtlasFrameKey, { y: number; h: number }>>>
+> = {
+  danang: {
+    block_special: { y: 298, h: 65 }, // "MI QUẢNG" storefront sign
+    block_mid_4: { y: 377, h: 60 }, // red lantern apartment
+  },
+};
+
+const resolveBand = (
+  themeId: ThemeId,
+  baseKey: AtlasFrameKey,
+): { y: number; h: number } | undefined => {
+  return HOME_BLOCK_ROW_OVERRIDES[themeId]?.[baseKey] ?? HOME_BLOCK_ROWS[baseKey];
+};
+
+const buildHomeFrameKey = (themeId: ThemeId, baseKey: AtlasFrameKey): string =>
+  `home_${themeId}_${baseKey}`;
+
+export const registerHomeAtlasFrames = (textures: Phaser.Textures.TextureManager): void => {
+  if (!textures.exists(HOME_SHEET_KEY)) return;
+  const tex = textures.get(HOME_SHEET_KEY);
+  if (!tex || tex.key === '__MISSING') return;
+  for (const [themeId, rect] of Object.entries(HOME_THEME_RECT) as [
+    ThemeId,
+    { x: number; w: number },
+  ][]) {
+    for (const baseKey of Object.keys(HOME_BLOCK_ROWS) as AtlasFrameKey[]) {
+      const band = resolveBand(themeId, baseKey);
+      if (!band) continue;
+      const name = buildHomeFrameKey(themeId, baseKey);
+      if (tex.has(name)) continue;
+      tex.add(name, 0, rect.x, band.y, rect.w, band.h);
+    }
+  }
+};
+
+/**
+ * Resolve the (texture, frame) pair to use for a block of `baseKey` under the
+ * currently selected `themeId`. Falls back to sprites-2.png when the theme
+ * has no homes.png column or the base key isn't covered.
+ */
+export const resolveBlockSprite = (
+  baseKey: AtlasFrameKey,
+  themeId: ThemeId,
+): { textureKey: string; frameKey: string } => {
+  if (HOME_THEME_RECT[themeId] && resolveBand(themeId, baseKey)) {
+    return { textureKey: HOME_SHEET_KEY, frameKey: buildHomeFrameKey(themeId, baseKey) };
+  }
+  return { textureKey: SPRITE_SHEET_KEY, frameKey: baseKey };
 };

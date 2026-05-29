@@ -18,7 +18,7 @@ export interface DailyResult {
   level: number;
 }
 
-export type ThemeId = 'hanoi' | 'saigon' | 'hue';
+export type ThemeId = 'hanoi' | 'hue' | 'danang' | 'saigon';
 
 export interface SaveDataV1 {
   v: 1;

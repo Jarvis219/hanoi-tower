@@ -29,13 +29,7 @@ const isoDate = (d: Date = new Date()): string =>
 
 const sortDesc = (a: LeaderboardEntry, b: LeaderboardEntry): number => b.score - a.score;
 
-export type SaveChangeReason =
-  | 'settings'
-  | 'run'
-  | 'achievement'
-  | 'theme'
-  | 'tutorial'
-  | 'cloud';
+export type SaveChangeReason = 'settings' | 'run' | 'achievement' | 'theme' | 'tutorial' | 'cloud';
 
 type ChangeListener = (data: Readonly<SaveDataV1>, reason: SaveChangeReason) => void;
 

@@ -52,9 +52,7 @@ class AuthManager {
     return identities.length === 0 || Boolean(this.user.is_anonymous);
   }
   public get isGoogleLinked(): boolean {
-    return Boolean(
-      this.user?.identities?.some((i) => i.provider === 'google'),
-    );
+    return Boolean(this.user?.identities?.some((i) => i.provider === 'google'));
   }
   public get displayName(): string {
     // Priority: user-edited name (saved + synced) > OAuth name > UUID-based fallback.

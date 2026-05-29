@@ -72,7 +72,7 @@
     },
     "themes": {
       "title": "Mở khoá theme",
-      "body": "Đạt tầng 50 mở khoá Sài Gòn 🌃, tầng 100 mở khoá Huế 🏯. Mỗi theme có sky riêng."
+      "body": "Tầng 50 mở khoá Huế 🏯, tầng 100 mở khoá Đà Nẵng 🌊, tầng 150 mở khoá Sài Gòn 🌃. Mỗi theme có sky riêng."
     },
     "next": "Tiếp ▶",
     "back": "◀ Trước",
@@ -102,9 +102,9 @@
     "items": {
       "tower_10": { "title": "Tầng đầu", "desc": "Đạt tầng 10" },
       "tower_25": { "title": "Khu phố", "desc": "Đạt tầng 25" },
-      "tower_50": { "title": "Cao ốc", "desc": "Đạt tầng 50 (mở khoá theme Sài Gòn)" },
-      "tower_100": { "title": "Toà tháp", "desc": "Đạt tầng 100 (mở khoá theme Huế)" },
-      "tower_200": { "title": "Vũ trụ", "desc": "Đạt tầng 200" },
+      "tower_50": { "title": "Cao ốc", "desc": "Đạt tầng 50 (mở khoá theme Huế)" },
+      "tower_100": { "title": "Toà tháp", "desc": "Đạt tầng 100 (mở khoá theme Đà Nẵng)" },
+      "tower_200": { "title": "Vũ trụ", "desc": "Đạt tầng 200 (mở khoá theme Sài Gòn ở tầng 150)" },
       "score_1k": { "title": "Điểm khởi đầu", "desc": "Đạt 1.000 điểm trong 1 ván" },
       "score_5k": { "title": "Tay chơi cứng", "desc": "Đạt 5.000 điểm trong 1 ván" },
       "score_10k": { "title": "Huyền thoại", "desc": "Đạt 10.000 điểm trong 1 ván" },
@@ -128,12 +128,14 @@
     "locked": "🔒 Mở khoá ở tầng {{level}}",
     "back": "← Quay lại",
     "hanoi": "Hà Nội",
-    "saigon": "Sài Gòn",
     "hue": "Huế",
+    "danang": "Đà Nẵng",
+    "saigon": "Sài Gòn",
     "desc": {
       "hanoi": "Phố cổ buổi sớm, gió Hồ Tây.",
-      "saigon": "Hẻm nhỏ về đêm, đèn neon, hơi thở nhiệt đới.",
-      "hue": "Hoàng cung trầm mặc, mưa lất phất."
+      "hue": "Hoàng cung trầm mặc, mưa lất phất.",
+      "danang": "Biển xanh, gió biển, cầu Rồng đêm rực sáng.",
+      "saigon": "Hẻm nhỏ về đêm, đèn neon, hơi thở nhiệt đới."
     }
   },
   "powerup": {

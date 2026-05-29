@@ -29,25 +29,33 @@ export const THEMES: Record<ThemeId, ThemeDef> = {
     menuBgColor: 0x141a2e, // deep navy with blue undertone
     accentColor: 0xf2cc8f, // warm gold
   },
-  saigon: {
-    id: 'saigon',
-    unlockAtLevel: 50,
-    skyColor: 0xff8c69, // sunset orange
-    menuBgColor: 0x2a1620, // very dark crimson
-    accentColor: 0xff9d6b, // warm coral
-    blockTint: 0xffd9a0,
-  },
   hue: {
     id: 'hue',
-    unlockAtLevel: 100,
+    unlockAtLevel: 50,
     skyColor: 0x6f5b9c, // royal purple
     menuBgColor: 0x1a1430, // deep indigo
     accentColor: 0xc9a8ff, // pale lavender
     blockTint: 0xd9c8ff,
   },
+  danang: {
+    id: 'danang',
+    unlockAtLevel: 100,
+    skyColor: 0x6cc3d1, // coastal turquoise
+    menuBgColor: 0x0f2530, // deep teal-navy
+    accentColor: 0x7adef0, // bright cyan
+    blockTint: 0xc8eef7,
+  },
+  saigon: {
+    id: 'saigon',
+    unlockAtLevel: 150,
+    skyColor: 0xff8c69, // sunset orange
+    menuBgColor: 0x2a1620, // very dark crimson
+    accentColor: 0xff9d6b, // warm coral
+    blockTint: 0xffd9a0,
+  },
 };
 
-export const THEME_ORDER: readonly ThemeId[] = ['hanoi', 'saigon', 'hue'] as const;
+export const THEME_ORDER: readonly ThemeId[] = ['hanoi', 'hue', 'danang', 'saigon'] as const;
 
 class ThemeManagerImpl {
   public isUnlocked(id: ThemeId): boolean {

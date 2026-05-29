@@ -72,7 +72,7 @@
     },
     "themes": {
       "title": "Unlock new themes",
-      "body": "Reach Floor 50 to unlock Saigon 🌃, Floor 100 to unlock Hue 🏯. Each theme has its own sky."
+      "body": "Reach Floor 50 → Hue 🏯, Floor 100 → Da Nang 🌊, Floor 150 → Saigon 🌃. Each theme has its own sky."
     },
     "next": "Next ▶",
     "back": "◀ Back",
@@ -102,9 +102,9 @@
     "items": {
       "tower_10": { "title": "First Floor", "desc": "Reach Floor 10" },
       "tower_25": { "title": "Neighborhood", "desc": "Reach Floor 25" },
-      "tower_50": { "title": "High-Rise", "desc": "Reach Floor 50 (unlocks Saigon theme)" },
-      "tower_100": { "title": "Tower", "desc": "Reach Floor 100 (unlocks Hue theme)" },
-      "tower_200": { "title": "To the Stars", "desc": "Reach Floor 200" },
+      "tower_50": { "title": "High-Rise", "desc": "Reach Floor 50 (unlocks Hue theme)" },
+      "tower_100": { "title": "Tower", "desc": "Reach Floor 100 (unlocks Da Nang theme)" },
+      "tower_200": { "title": "To the Stars", "desc": "Reach Floor 200 (Saigon unlocks at Floor 150)" },
       "score_1k": { "title": "Warming Up", "desc": "Score 1,000 in a single run" },
       "score_5k": { "title": "Serious", "desc": "Score 5,000 in a single run" },
       "score_10k": { "title": "Legendary", "desc": "Score 10,000 in a single run" },
@@ -128,12 +128,14 @@
     "locked": "🔒 Unlocks at Floor {{level}}",
     "back": "← Back",
     "hanoi": "Hanoi",
-    "saigon": "Saigon",
     "hue": "Hue",
+    "danang": "Da Nang",
+    "saigon": "Saigon",
     "desc": {
       "hanoi": "Old Quarter at dawn, Tây Lake breeze.",
-      "saigon": "Neon alleys at night, tropical heat.",
-      "hue": "Quiet royal city, drizzling rain."
+      "hue": "Quiet royal city, drizzling rain.",
+      "danang": "Coastal breeze, Dragon Bridge glowing at night.",
+      "saigon": "Neon alleys at night, tropical heat."
     }
   },
   "powerup": {

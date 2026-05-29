@@ -2,10 +2,7 @@ import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../config/Constants';
 import { authManager } from '../systems/supabase/AuthManager';
 import { supabaseEnabled } from '../systems/supabase/SupabaseClient';
-import {
-  leaderboardService,
-  type LeaderboardRow,
-} from '../systems/supabase/LeaderboardService';
+import { leaderboardService, type LeaderboardRow } from '../systems/supabase/LeaderboardService';
 import { t } from '../systems/I18nManager';
 import { themeManager } from '../systems/ThemeManager';
 import { Button, COLOR } from '../ui/Button';
@@ -219,7 +216,8 @@ export class LeaderboardScene extends Phaser.Scene {
       card.lineStyle(isSelf || isTop3 ? 2 : 1, border, isSelf || isTop3 ? 0.95 : 0.4);
       card.strokeRoundedRect(cx - cardW / 2, y, cardW, CARD_H, CARD_R);
 
-      const rankIcon = row.rank === 1 ? '🥇' : row.rank === 2 ? '🥈' : row.rank === 3 ? '🥉' : `#${row.rank}`;
+      const rankIcon =
+        row.rank === 1 ? '🥇' : row.rank === 2 ? '🥈' : row.rank === 3 ? '🥉' : `#${row.rank}`;
       const rank = this.add
         .text(34, cy, rankIcon, {
           fontFamily: 'system-ui, "Segoe UI Emoji", sans-serif',
@@ -278,11 +276,7 @@ export class LeaderboardScene extends Phaser.Scene {
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (!this.dragging || !pointer.isDown) return;
       const delta = pointer.y - this.dragStartY;
-      this.scrollPos = Phaser.Math.Clamp(
-        this.dragStartScroll - delta,
-        0,
-        this.maxScroll,
-      );
+      this.scrollPos = Phaser.Math.Clamp(this.dragStartScroll - delta, 0, this.maxScroll);
       this.listCam.scrollY = VIEW_TOP + this.scrollPos;
     });
     const release = (): void => {

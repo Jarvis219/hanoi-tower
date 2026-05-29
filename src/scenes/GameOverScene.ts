@@ -108,17 +108,12 @@ export class GameOverScene extends Phaser.Scene {
       .setOrigin(0.5, 0);
 
     this.rankText = this.add
-      .text(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT * 0.55,
-        supabaseEnabled ? t('gameover.submitting') : '',
-        {
-          fontFamily: 'system-ui, sans-serif',
-          fontSize: '13px',
-          color: '#cccccc',
-          align: 'center',
-        },
-      )
+      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.55, supabaseEnabled ? t('gameover.submitting') : '', {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '13px',
+        color: '#cccccc',
+        align: 'center',
+      })
       .setOrigin(0.5, 0);
 
     void this.submitAndShowRank();
@@ -184,11 +179,23 @@ export class GameOverScene extends Phaser.Scene {
     if (!this.rankText) return;
     if (!result.ok) {
       const reason = result.reason ?? 'unknown';
+      // rate_limited (local or server): we already have a submission for this
+      // mode in the window — don't surface as an error, treat as "saved".
+      if (reason === 'rate_limited_local' || reason.includes('rate_limited')) {
+        this.rankText.setText(t('gameover.submitted'));
+        return;
+      }
       this.rankText.setText(
         reason === 'offline' || reason === 'unavailable'
           ? t('gameover.submit_offline')
           : t('gameover.submit_failed'),
       );
+      return;
+    }
+    // skipped-not-best: score wasn't a new PB; show neutral "submitted" rather
+    // than a failure indicator.
+    if (result.reason === 'skipped-not-best') {
+      this.rankText.setText(t('gameover.submitted'));
       return;
     }
     if (result.rank) {
@@ -207,7 +214,9 @@ export class GameOverScene extends Phaser.Scene {
     });
     if (result.method === 'clipboard' && result.ok) {
       this.shareBtn.setLabel(t('gameover.share_copied'));
-      this.time.delayedCall(2000, () => this.shareBtn?.setLabel(t('gameover.share').replace(/^📤\s*/, '')));
+      this.time.delayedCall(2000, () =>
+        this.shareBtn?.setLabel(t('gameover.share').replace(/^📤\s*/, '')),
+      );
     }
   }
 }

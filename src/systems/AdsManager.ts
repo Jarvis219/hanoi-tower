@@ -127,7 +127,8 @@ class AdsManager {
         'width:min(360px,100%);background:#1a1a2e;border-radius:12px;padding:16px;color:#fff;';
 
       const adWrap = document.createElement('div');
-      adWrap.style.cssText = 'min-height:250px;background:rgba(255,255,255,0.04);border-radius:8px;overflow:hidden;';
+      adWrap.style.cssText =
+        'min-height:250px;background:rgba(255,255,255,0.04);border-radius:8px;overflow:hidden;';
       const ins = document.createElement('ins');
       ins.className = 'adsbygoogle';
       ins.style.cssText = 'display:block;width:100%;min-height:250px;';

@@ -18,6 +18,7 @@ import { hapticManager } from '../systems/HapticManager';
 import { applyMagnet, PowerUpEffects, rollPowerUp } from '../systems/PowerUpSystem';
 import { ScoreSystem } from '../systems/ScoreSystem';
 import { saveManager } from '../systems/SaveManager';
+import { cloudSyncManager } from '../systems/supabase/CloudSyncManager';
 import { themeManager } from '../systems/ThemeManager';
 import { t } from '../systems/I18nManager';
 import { showScorePopup } from '../ui/ScorePopup';
@@ -30,7 +31,11 @@ import type { GameMode } from '../types/SaveData';
 const SWING_LEFT = 20;
 const SWING_RIGHT = GAME_WIDTH - 20;
 const FLOOR_Y = GAME_HEIGHT - 80;
-const VISIBLE_TOP_BAND = 220;
+// How far below the camera center we want the latest landed block to sit.
+// Smaller value → latest block sits lower on screen → swinging block has more
+// breathing room above for HUD + swing visibility. At 120 the swinging block
+// lands ~26% from the top of the screen.
+const VISIBLE_TOP_BAND = 120;
 
 // Block visuals use the sprite's native aspect ratio. The sprite is ~256x150,
 // so to keep buildings recognizable we use ~ that aspect for blocks.
@@ -407,11 +412,16 @@ export class GameScene extends Phaser.Scene {
       achievementManager.bump('daily_1', 1);
       // daily_7: distinct play-days count
       const distinctDays = new Set(
-        (saveManager as unknown as { data: { dailyResults: { date: string }[] } }).data
-          ?.dailyResults?.map((r) => r.date) ?? [],
+        (
+          saveManager as unknown as { data: { dailyResults: { date: string }[] } }
+        ).data?.dailyResults?.map((r) => r.date) ?? [],
       ).size;
       achievementManager.setIfHigher('daily_7', distinctDays);
     }
+    // All run-related save mutations have happened above. Flush to Supabase
+    // now (bypassing the 15s debounce) so the player's progress reaches the
+    // cloud in one combined push instead of trickling in across the next run.
+    void cloudSyncManager.flush();
     const runDurationMs = Math.max(0, Math.round(performance.now() - this.runStartedAt));
     this.time.delayedCall(700, () => {
       this.scene.stop(SCENE_KEYS.HUD);

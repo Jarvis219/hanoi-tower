@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
-import { ATLAS_FRAMES, SPRITE_SHEET_KEY } from '../config/atlas';
+import { ATLAS_FRAMES, SPRITE_SHEET_KEY, resolveBlockSprite } from '../config/atlas';
 import type { AtlasFrameKey } from '../config/atlas';
 import type { PowerUpType } from '../config/Tuning';
+import { themeManager } from '../systems/ThemeManager';
 
 export const BlockState = {
   Swinging: 'swinging',
@@ -95,12 +96,33 @@ export class Block extends Phaser.GameObjects.Container {
   }
 
   private buildVisual(): void {
-    if (this.scene.textures.exists(SPRITE_SHEET_KEY) && ATLAS_FRAMES[this.spriteKey]) {
+    const themeId = themeManager.getSelected().id;
+    const resolved = resolveBlockSprite(this.spriteKey, themeId);
+    const themedReady =
+      this.scene.textures.exists(resolved.textureKey) &&
+      this.scene.textures.get(resolved.textureKey).has(resolved.frameKey);
+
+    // Render sprites 2px taller than the logical block so adjacent floors
+    // overlap by 1px on each side — hides subpixel gaps and any residual
+    // transparent edge rows that leak the sky behind the tower.
+    const visualHeight = this.logicalHeight + 2;
+
+    if (themedReady) {
+      const img = this.scene.add.image(0, 0, resolved.textureKey, resolved.frameKey);
+      img.setDisplaySize(this.logicalWidth, visualHeight);
+      this.sprite = img;
+    } else if (this.scene.textures.exists(SPRITE_SHEET_KEY) && ATLAS_FRAMES[this.spriteKey]) {
       const img = this.scene.add.image(0, 0, SPRITE_SHEET_KEY, this.spriteKey);
-      img.setDisplaySize(this.logicalWidth, this.logicalHeight);
+      img.setDisplaySize(this.logicalWidth, visualHeight);
       this.sprite = img;
     } else {
-      this.sprite = this.scene.add.rectangle(0, 0, this.logicalWidth, this.logicalHeight, this.fillColor);
+      this.sprite = this.scene.add.rectangle(
+        0,
+        0,
+        this.logicalWidth,
+        this.logicalHeight,
+        this.fillColor,
+      );
       (this.sprite as Phaser.GameObjects.Rectangle).setStrokeStyle(2, 0x000000, 0.3);
     }
     this.add(this.sprite);

@@ -18,5 +18,4 @@ const envFlag = (name: string): boolean => {
   return v === 'true' || v === '1';
 };
 
-export const DEV_UNLOCK_ALL =
-  envFlag('VITE_DEV_UNLOCK_ALL') || queryFlag('unlock');
+export const DEV_UNLOCK_ALL = envFlag('VITE_DEV_UNLOCK_ALL') || queryFlag('unlock');

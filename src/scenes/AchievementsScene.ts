@@ -66,9 +66,7 @@ export class AchievementsScene extends Phaser.Scene {
     ACHIEVEMENTS.forEach((a, i) => {
       const y = i * ROW_H + 4;
       const realState = saveManager.getAchievement(a.id);
-      const state = DEV_UNLOCK_ALL
-        ? { unlocked: true, progress: a.target }
-        : realState;
+      const state = DEV_UNLOCK_ALL ? { unlocked: true, progress: a.target } : realState;
       const tint = state.unlocked ? 0xf2cc8f : 0x444444;
       const alpha = state.unlocked ? 1 : 0.6;
       const cx = GAME_WIDTH / 2;
@@ -186,11 +184,7 @@ export class AchievementsScene extends Phaser.Scene {
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (!this.dragging || !pointer.isDown) return;
       const delta = pointer.y - this.dragStartY;
-      this.scrollPos = Phaser.Math.Clamp(
-        this.dragStartScroll - delta,
-        0,
-        this.maxScroll,
-      );
+      this.scrollPos = Phaser.Math.Clamp(this.dragStartScroll - delta, 0, this.maxScroll);
       refresh();
     });
     const releaseDrag = (): void => {
@@ -202,12 +196,7 @@ export class AchievementsScene extends Phaser.Scene {
 
     this.input.on(
       'wheel',
-      (
-        pointer: Phaser.Input.Pointer,
-        _objs: unknown,
-        _dx: number,
-        dy: number,
-      ) => {
+      (pointer: Phaser.Input.Pointer, _objs: unknown, _dx: number, dy: number) => {
         if (!inView(pointer.y)) return;
         this.scrollPos = Phaser.Math.Clamp(this.scrollPos + dy * 0.6, 0, this.maxScroll);
         refresh();

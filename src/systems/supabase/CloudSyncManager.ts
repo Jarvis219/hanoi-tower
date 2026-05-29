@@ -1,14 +1,18 @@
-import type {
-  AchievementRow,
-  DailyResultRow,
-  ProfileRow,
-} from '../../types/Cloud';
+import type { AchievementRow, DailyResultRow, ProfileRow } from '../../types/Cloud';
 import type { AchievementState, DailyResult, SaveDataV1 } from '../../types/SaveData';
 import { saveManager, type SaveChangeReason } from '../SaveManager';
 import { authManager } from './AuthManager';
 import { supabase, supabaseEnabled } from './SupabaseClient';
 
-const PUSH_DEBOUNCE_MS = 2_000;
+// Long debounce: during a play session the player triggers many save
+// mutations (perfect drops, combo bumps, theme/setting toggles). Without
+// coalescing aggressively, we'd burst-call Supabase every couple of seconds.
+// 15s is long enough to fold most in-game noise into a single push; game-over
+// and visibility-change events bypass it via explicit flush.
+const PUSH_DEBOUNCE_MS = 15_000;
+// Minimum gap between actual pushes (additional throttle for bursts that
+// arrive while a push was in flight).
+const MIN_PUSH_INTERVAL_MS = 10_000;
 
 interface PendingPush {
   profile: boolean;
@@ -27,6 +31,7 @@ class CloudSyncManager {
   private pending = emptyPending();
   private timer: ReturnType<typeof setTimeout> | null = null;
   private lastPushAt = 0;
+  private pushInFlight = false;
 
   public async start(): Promise<void> {
     if (this.started || !supabaseEnabled || !supabase) return;
@@ -34,6 +39,22 @@ class CloudSyncManager {
 
     // Listen to local mutations immediately so anything that happens during pull is queued.
     saveManager.onAnyChange((_, reason) => this.queuePush(reason));
+
+    // Ship pending data when the player switches tabs / closes the app so we
+    // don't lose mutations that haven't reached the 15s debounce window yet.
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && this.hasPending()) this.flushNow();
+      });
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => {
+        if (this.hasPending()) this.flushNow();
+      });
+      window.addEventListener('pagehide', () => {
+        if (this.hasPending()) this.flushNow();
+      });
+    }
 
     const uid = await this.waitForUid();
     if (!uid) return;
@@ -79,10 +100,19 @@ class CloudSyncManager {
     this.timer = setTimeout(() => this.flushNow(), PUSH_DEBOUNCE_MS);
   }
 
-  private flushNow(): void {
+  private flushNow(force = false): void {
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
+    }
+    if (this.pushInFlight) return; // a push is already running; pending merges in
+    if (!force) {
+      const sinceLast = Date.now() - this.lastPushAt;
+      if (sinceLast < MIN_PUSH_INTERVAL_MS && this.lastPushAt > 0) {
+        // Wait the remaining cool-down before pushing.
+        this.timer = setTimeout(() => this.flushNow(), MIN_PUSH_INTERVAL_MS - sinceLast);
+        return;
+      }
     }
     void this.push();
   }
@@ -90,6 +120,8 @@ class CloudSyncManager {
   private async push(): Promise<void> {
     const uid = authManager.currentUid;
     if (!uid || !supabase) return;
+    if (this.pushInFlight) return;
+    this.pushInFlight = true;
     const pending = this.pending;
     this.pending = emptyPending();
     const snap = saveManager.snapshot();
@@ -103,19 +135,26 @@ class CloudSyncManager {
       if (rows.length > 0) {
         tasks.push(
           Promise.resolve(supabase.from('achievements').upsert(rows)).then((res) => {
-            if (res.error) console.warn('[CloudSync] achievements upsert error:', res.error.message);
+            if (res.error)
+              console.warn('[CloudSync] achievements upsert error:', res.error.message);
           }),
         );
       }
     }
     if (pending.dailyResults.size > 0) {
       const rows = Array.from(pending.dailyResults)
-        .map((date) => this.buildDailyResultRow(uid, snap.dailyResults.find((r) => r.date === date)))
+        .map((date) =>
+          this.buildDailyResultRow(
+            uid,
+            snap.dailyResults.find((r) => r.date === date),
+          ),
+        )
         .filter((r): r is DailyResultRow => r !== null);
       if (rows.length > 0) {
         tasks.push(
           Promise.resolve(supabase.from('daily_results').upsert(rows)).then((res) => {
-            if (res.error) console.warn('[CloudSync] daily_results upsert error:', res.error.message);
+            if (res.error)
+              console.warn('[CloudSync] daily_results upsert error:', res.error.message);
           }),
         );
       }
@@ -126,6 +165,10 @@ class CloudSyncManager {
       this.lastPushAt = Date.now();
     } catch (err) {
       console.warn('[CloudSync] push failed:', err);
+    } finally {
+      this.pushInFlight = false;
+      // If new mutations arrived while pushing, schedule the next flush.
+      if (this.hasPending()) this.schedule();
     }
   }
 
@@ -193,7 +236,10 @@ class CloudSyncManager {
       merged.highLevel = Math.max(local.highLevel, remoteProfile.high_level);
       merged.language = remoteProfile.language;
       merged.selectedTheme = remoteProfile.selected_theme;
-      merged.tutorialDone = remoteProfile.tutorial_done;
+      // OR-merge: tutorial completion is a one-way flag. Never let a stale
+      // cloud `false` revert a local `true` that the player just set via
+      // Skip / "Chơi ngay" before the 15s push debounce had a chance to fire.
+      merged.tutorialDone = local.tutorialDone || remoteProfile.tutorial_done;
       merged.bgmVolume = remoteProfile.bgm_volume;
       merged.sfxVolume = remoteProfile.sfx_volume;
       merged.hapticEnabled = remoteProfile.haptic_enabled;
@@ -214,8 +260,7 @@ class CloudSyncManager {
       mergedAchievements[r.achievement_id] = {
         unlocked: Boolean(prev?.unlocked || r.unlocked),
         progress: Math.max(prev?.progress ?? 0, r.progress),
-        unlockedAt:
-          prev?.unlockedAt ?? (r.unlocked_at ? r.unlocked_at.slice(0, 10) : undefined),
+        unlockedAt: prev?.unlockedAt ?? (r.unlocked_at ? r.unlocked_at.slice(0, 10) : undefined),
       };
     }
     merged.achievements = mergedAchievements;
@@ -236,8 +281,11 @@ class CloudSyncManager {
     saveManager.applyCloudSnapshot(merged);
   }
 
+  /** Force-push immediately, bypassing the debounce + min-interval cooldown.
+   * Used at session boundaries (game over, tab hide, unload) to make sure
+   * progress reaches the cloud instead of waiting for the next debounce. */
   public async flush(): Promise<void> {
-    this.flushNow();
+    this.flushNow(true);
     await new Promise((r) => setTimeout(r, 50));
   }
 

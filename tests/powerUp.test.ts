@@ -86,6 +86,11 @@ describe('PowerUpEffects', () => {
     const e = new PowerUpEffects();
     e.activate('slow', 1000);
     e.activate('magnet', 2000);
-    expect(e.list().map((x) => x.type).sort()).toEqual(['magnet', 'slow']);
+    expect(
+      e
+        .list()
+        .map((x) => x.type)
+        .sort(),
+    ).toEqual(['magnet', 'slow']);
   });
 });

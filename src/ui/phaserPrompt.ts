@@ -64,7 +64,9 @@ export const phaserPrompt = (
 
     const card = scene.add.graphics().setDepth(Z_CARD);
     card.fillStyle(0x1f2236, 1).fillRoundedRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 14);
-    card.lineStyle(1, 0x3d405b, 1).strokeRoundedRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 14);
+    card
+      .lineStyle(1, 0x3d405b, 1)
+      .strokeRoundedRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 14);
     disposables.push(() => card.destroy());
 
     const titleText = scene.add
@@ -139,7 +141,10 @@ export const phaserPrompt = (
     };
 
     // Spinner — rotating arc next to the Save button label while validating.
-    const spinner = scene.add.graphics().setDepth(Z_BUTTON + 1).setVisible(false);
+    const spinner = scene.add
+      .graphics()
+      .setDepth(Z_BUTTON + 1)
+      .setVisible(false);
     disposables.push(() => spinner.destroy());
 
     let spinnerAngle = 0;
@@ -226,10 +231,7 @@ export const phaserPrompt = (
     // the canvas), so we don't need to special-case them here.
     backdrop.on('pointerdown', (_p: Phaser.Input.Pointer, x: number, y: number) => {
       const inCard =
-        x >= cx - cardW / 2 &&
-        x <= cx + cardW / 2 &&
-        y >= cy - cardH / 2 &&
-        y <= cy + cardH / 2;
+        x >= cx - cardW / 2 && x <= cx + cardW / 2 && y >= cy - cardH / 2 && y <= cy + cardH / 2;
       if (inCard) return;
       if (!busy) done(null);
     });
@@ -238,7 +240,7 @@ export const phaserPrompt = (
       if (closed) return;
       busy = b;
       refreshSaveBtn();
-      saveBtn.setLabel(b ? options.savingLabel ?? '...' : options.saveLabel ?? 'Save');
+      saveBtn.setLabel(b ? (options.savingLabel ?? '...') : (options.saveLabel ?? 'Save'));
       if (b) {
         spinner.setVisible(true);
         spinnerAngle = 0;

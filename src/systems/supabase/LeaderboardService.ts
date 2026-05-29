@@ -1,8 +1,4 @@
-import type {
-  LeaderboardPeriod,
-  SubmitScorePayload,
-  SubmitScoreResult,
-} from '../../types/Cloud';
+import type { LeaderboardPeriod, SubmitScorePayload, SubmitScoreResult } from '../../types/Cloud';
 import type { GameMode } from '../../types/SaveData';
 import { ALL_TIME_BUCKET, todayBucket, weekBucket } from '../../utils/dateBuckets';
 import { authManager } from './AuthManager';
@@ -22,6 +18,14 @@ interface LeaderboardRpcRow {
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const CACHE_PREFIX = 'lb-cache:';
 const TOP_LIMIT = 100;
+// Mirrors the server-side rate_limits window (10s in current migration). We
+// skip the network call entirely when we know it'd be rejected — saves a
+// roundtrip + avoids surfacing "rate_limited" to the user.
+const CLIENT_RATE_WINDOW_MS = 10_000;
+// Track per-mode best already-submitted score so we don't re-submit a worse
+// or equal score (the server upsert wouldn't write it anyway).
+const SUBMITTED_PREFIX = 'lb-submitted:';
+const LAST_SUBMIT_AT_KEY = 'lb-last-submit-at';
 
 interface CachedBoard {
   entries: LeaderboardRow[];
@@ -136,6 +140,22 @@ export const leaderboardService = {
     if (!authManager.currentUid) {
       return { ok: false, newPersonalBest: false, reason: 'not-signed-in' };
     }
+
+    // Skip if the local best for this mode is already higher — server upsert
+    // would no-op since `score < excluded.score` in submit_score.
+    const submittedKey = `${SUBMITTED_PREFIX}${payload.mode}`;
+    const prevBest = Number(localStorage.getItem(submittedKey) ?? 0);
+    if (payload.score <= prevBest) {
+      return { ok: true, newPersonalBest: false, reason: 'skipped-not-best' };
+    }
+
+    // Skip if we just submitted within the server rate-limit window. The RPC
+    // would return `rate_limited` 53400 — no point calling it.
+    const lastAt = Number(localStorage.getItem(LAST_SUBMIT_AT_KEY) ?? 0);
+    if (Date.now() - lastAt < CLIENT_RATE_WINDOW_MS) {
+      return { ok: false, newPersonalBest: false, reason: 'rate_limited_local' };
+    }
+
     const { data, error } = await supabase.rpc('submit_score', {
       p_score: payload.score,
       p_level: payload.level,
@@ -144,7 +164,25 @@ export const leaderboardService = {
       p_perfects: payload.perfects,
     });
     if (error) {
+      // Server-side rate limit hit (race vs our local check). Cache the
+      // timestamp so subsequent calls in the window short-circuit before
+      // hitting the network.
+      if (error.message?.includes('rate_limited')) {
+        try {
+          localStorage.setItem(LAST_SUBMIT_AT_KEY, String(Date.now()));
+        } catch {
+          // ignore
+        }
+      }
       return { ok: false, newPersonalBest: false, reason: error.message };
+    }
+
+    // Persist success so future submits of equal/lower scores don't fire.
+    try {
+      localStorage.setItem(submittedKey, String(payload.score));
+      localStorage.setItem(LAST_SUBMIT_AT_KEY, String(Date.now()));
+    } catch {
+      // ignore quota errors
     }
     this.invalidate(payload.mode);
     return data as SubmitScoreResult;

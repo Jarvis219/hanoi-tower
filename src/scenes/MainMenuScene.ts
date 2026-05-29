@@ -28,9 +28,14 @@ export class MainMenuScene extends Phaser.Scene {
 
     // Subtle theme-tinted top gradient — adds atmosphere without harming text contrast.
     const sky = this.add.graphics();
-    sky.fillGradientStyle(theme.skyColor, theme.skyColor, theme.menuBgColor, theme.menuBgColor, 0.55);
+    sky.fillGradientStyle(
+      theme.skyColor,
+      theme.skyColor,
+      theme.menuBgColor,
+      theme.menuBgColor,
+      0.55,
+    );
     sky.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT * 0.5);
-
 
     // Title — large with subtle shadow
     const title = this.add

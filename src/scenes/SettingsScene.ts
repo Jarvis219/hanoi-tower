@@ -67,10 +67,15 @@ export class SettingsScene extends Phaser.Scene {
     y = y + SECTION_GAP_SLIDER + 60 + SECTION_SPACING;
 
     this.makeSectionHeader(y, t('settings.section_prefs'));
-    this.makeToggle(y + SECTION_GAP_INLINE, t('settings.haptic'), saveManager.hapticEnabled, (next) => {
-      saveManager.setHapticEnabled(next);
-      if (next) hapticManager.vibrate(60);
-    });
+    this.makeToggle(
+      y + SECTION_GAP_INLINE,
+      t('settings.haptic'),
+      saveManager.hapticEnabled,
+      (next) => {
+        saveManager.setHapticEnabled(next);
+        if (next) hapticManager.vibrate(60);
+      },
+    );
     this.makeLanguagePicker(y + SECTION_GAP_INLINE + 44);
     y = y + SECTION_GAP_INLINE + 44 + SECTION_SPACING;
 
@@ -204,7 +209,11 @@ export class SettingsScene extends Phaser.Scene {
     let current = initial;
     pill.hit.on('pointerup', () => {
       current = !current;
-      this.redrawPill(pill, current ? t('settings.on') : t('settings.off'), current ? COLOR.primary : COLOR.muted);
+      this.redrawPill(
+        pill,
+        current ? t('settings.on') : t('settings.off'),
+        current ? COLOR.primary : COLOR.muted,
+      );
       onChange(current);
     });
   }
@@ -353,9 +362,7 @@ export class SettingsScene extends Phaser.Scene {
   private makeAccountSection(y: number): void {
     const linked = authManager.isGoogleLinked;
     const email = authManager.currentUser?.email;
-    const status = linked
-      ? t('account.linked', { email: email ?? 'Google' })
-      : t('account.guest');
+    const status = linked ? t('account.linked', { email: email ?? 'Google' }) : t('account.guest');
 
     this.add
       .text(GAME_WIDTH / 2, y, status, {
