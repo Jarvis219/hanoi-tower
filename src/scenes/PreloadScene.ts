@@ -31,6 +31,9 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('shop_brick_2', 'assets/images/buildings/shop_brick_2.png');
     this.load.image('shop_yellow_1', 'assets/images/buildings/shop_yellow_1.png');
     this.load.image('shop_yellow_2', 'assets/images/buildings/shop_yellow_2.png');
+    // Added from coffeeshopstuff.png (CC-BY 3.0) for streetscape variety.
+    this.load.image('shop_teahouse', 'assets/images/buildings/shop_teahouse.png');
+    this.load.image('shop_cafe', 'assets/images/buildings/shop_cafe.png');
     // Per-theme skylines for the distant parallax layer.
     this.load.image('skyline_hanoi', 'assets/images/buildings/skyline_hanoi.png');
     this.load.image('skyline_hue', 'assets/images/buildings/skyline_hue.png');

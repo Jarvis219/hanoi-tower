@@ -1,21 +1,18 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH } from '../config/Constants';
-import { ATLAS_FRAMES, MID_BLOCK_KEYS, SPRITE_SHEET_KEY } from '../config/atlas';
+import { ATLAS_FRAMES, SPRITE_SHEET_KEY } from '../config/atlas';
 import type { AtlasFrameKey } from '../config/atlas';
 import { themeManager } from '../systems/ThemeManager';
 import type { ThemeId } from '../types/SaveData';
 
 /**
- * Ground-level streetscape — single row that mixes external shophouse
- * sprites (CC-BY 4.0 from 2D Pixel City Pack) with atlas tube-house
- * blocks, plus a far-distant skyline silhouette behind everything.
+ * Ground-level streetscape — single row of external shophouse sprites
+ * (CC-BY 4.0 from 2D Pixel City Pack + CC-BY 3.0 from coffeeshopstuff)
+ * plus a far-distant theme-tinted skyline silhouette behind everything.
  *
- * Constraints learned the hard way:
- *   - NEVER setFlipX on atlas blocks — they carry painted text
- *     ("COFFEE 1888", "TẠP HÓA 24H"…) that becomes unreadable mirrored.
- *   - Only ONE building row; multiple overlapping rows hide the variety.
- *   - Spacing weighted so big external shophouses (CLUB / yellow awning)
- *     show up regularly — those are the freshest sprites.
+ * Constraint: the tower blocks (homes.png MID_BLOCK_KEYS) used to mix in
+ * here too — that made the background read as duplicates of what the
+ * player was stacking. Dropped entirely; street uses ONLY external shops.
  *
  * Layers (back → front):
  *   1. Distant skyline silhouette, parallax 0.45, tinted pastel
@@ -24,13 +21,15 @@ import type { ThemeId } from '../types/SaveData';
  *   4. Sparse street props (lamps, plants), parallax 0.95
  */
 
-type BuildingKind =
-  | { source: 'external'; key: 'shop_brick_1' | 'shop_brick_2' | 'shop_yellow_1' | 'shop_yellow_2' }
-  | { source: 'atlas'; key: AtlasFrameKey; stories: 1 | 2 };
-
-const TINT_PALETTE = [
-  0xffffff, 0xf3c884, 0xe6a574, 0xb9d6e6, 0xc8e6cd, 0xefc8d6, 0xd9d2b5,
+const SHOP_KEYS = [
+  'shop_brick_1',
+  'shop_brick_2',
+  'shop_yellow_1',
+  'shop_yellow_2',
+  'shop_teahouse',
+  'shop_cafe',
 ] as const;
+type ShopKey = (typeof SHOP_KEYS)[number];
 
 const STREET_PROPS: AtlasFrameKey[] = [
   'decor_street_lamp',
@@ -92,36 +91,16 @@ export class Streetscape {
     }
   }
 
-  /** Pick the next building in the row — weighted to favor variety. */
-  private pickNext(prev?: BuildingKind): BuildingKind {
-    // ~50/50 external vs atlas, but never two identical in a row.
-    const useExternal = Math.random() < 0.55;
-    if (useExternal) {
-      const candidates = [
-        'shop_brick_1',
-        'shop_brick_2',
-        'shop_yellow_1',
-        'shop_yellow_2',
-      ] as const;
-      let pick = candidates[Phaser.Math.Between(0, candidates.length - 1)]!;
-      if (prev?.source === 'external' && prev.key === pick) {
-        pick = candidates[(candidates.indexOf(pick) + 1) % candidates.length]!;
-      }
-      return { source: 'external', key: pick };
+  /** Pick the next shop — never repeat the immediately previous one. */
+  private pickNext(prev?: ShopKey): ShopKey {
+    let pick = SHOP_KEYS[Phaser.Math.Between(0, SHOP_KEYS.length - 1)]!;
+    if (prev && prev === pick) {
+      pick = SHOP_KEYS[(SHOP_KEYS.indexOf(pick) + 1) % SHOP_KEYS.length]!;
     }
-    let key = MID_BLOCK_KEYS[Phaser.Math.Between(0, MID_BLOCK_KEYS.length - 1)]!;
-    if (prev?.source === 'atlas' && prev.key === key) {
-      key = MID_BLOCK_KEYS[(MID_BLOCK_KEYS.indexOf(key) + 1) % MID_BLOCK_KEYS.length]!;
-    }
-    const stories: 1 | 2 = Math.random() < 0.55 ? 2 : 1;
-    return { source: 'atlas', key, stories };
+    return pick;
   }
 
-  private renderExternal(
-    x: number,
-    baseY: number,
-    key: 'shop_brick_1' | 'shop_brick_2' | 'shop_yellow_1' | 'shop_yellow_2',
-  ): number {
+  private renderShop(x: number, baseY: number, key: ShopKey): number {
     if (!this.scene.textures.exists(key)) return 60;
     const scale = 0.7 * Phaser.Math.FloatBetween(0.95, 1.05);
     const img = this.scene.add
@@ -134,41 +113,16 @@ export class Streetscape {
     return img.displayWidth;
   }
 
-  private renderAtlas(x: number, baseY: number, key: AtlasFrameKey, stories: 1 | 2): number {
-    const scale = 0.7 * Phaser.Math.FloatBetween(0.95, 1.05);
-    const tint = TINT_PALETTE[Phaser.Math.Between(0, TINT_PALETTE.length - 1)] ?? 0xffffff;
-    const frameH = ATLAS_FRAMES[key].h * scale;
-    let yCursor = baseY;
-    let widest = 0;
-    for (let i = 0; i < stories; i += 1) {
-      const img = this.scene.add
-        .image(x, yCursor, SPRITE_SHEET_KEY, key)
-        .setOrigin(0.5, 1)
-        .setScale(scale)
-        .setDepth(-812)
-        .setScrollFactor(0.9, 0.9)
-        .setTint(tint);
-      // No setFlipX — text on facade must stay readable.
-      this.props.push(img);
-      if (img.displayWidth > widest) widest = img.displayWidth;
-      yCursor -= frameH * 0.98;
-    }
-    return widest;
-  }
-
   private buildBuildingRow(groundY: number): void {
     const rowY = groundY + 22;
     let x = -10;
     let safety = 50;
-    let prev: BuildingKind | undefined;
+    let prev: ShopKey | undefined;
     while (x < GAME_WIDTH + 10 && safety-- > 0) {
-      const plan = this.pickNext(prev);
-      const w =
-        plan.source === 'external'
-          ? this.renderExternal(x + 0, rowY, plan.key)
-          : this.renderAtlas(x + 0, rowY, plan.key, plan.stories);
+      const pick = this.pickNext(prev);
+      const w = this.renderShop(x + 0, rowY, pick);
       x += w + Phaser.Math.Between(2, 10); // small visible gap between buildings
-      prev = plan;
+      prev = pick;
     }
   }
 

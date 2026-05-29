@@ -48,113 +48,212 @@ export class GameOverScene extends Phaser.Scene {
     const theme = themeManager.getSelected();
     this.cameras.main.setBackgroundColor(theme.menuBgColor);
 
-    this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.2, t('gameover.title'), {
+    // ─── Subtle theme-colored top gradient overlay ─────────────────────
+    const sky = this.add.graphics();
+    sky.fillGradientStyle(
+      theme.skyColor,
+      theme.skyColor,
+      theme.menuBgColor,
+      theme.menuBgColor,
+      0.4,
+    );
+    sky.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT * 0.45);
+
+    // ─── Title with entrance slide-in ──────────────────────────────────
+    const title = this.add
+      .text(GAME_WIDTH / 2, 70, t('gameover.title'), {
         fontFamily: 'system-ui, sans-serif',
-        fontSize: '48px',
+        fontSize: '44px',
         color: themeManager.accentHex(),
         fontStyle: 'bold',
         stroke: '#000',
         strokeThickness: 5,
+        shadow: { color: '#000', blur: 8, fill: true, offsetX: 0, offsetY: 4 },
       })
       .setOrigin(0.5);
+    title.setAlpha(0).setY(40);
+    this.tweens.add({
+      targets: title,
+      alpha: 1,
+      y: 70,
+      duration: 360,
+      ease: 'Cubic.easeOut',
+    });
 
+    // ─── Mode chip ─────────────────────────────────────────────────────
     if (this.mode === 'daily') {
+      const chip = this.add.graphics();
+      chip.fillStyle(0x5dade2, 0.85);
+      chip.fillRoundedRect(GAME_WIDTH / 2 - 50, 110, 100, 22, 11);
       this.add
-        .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.28, '📅 Daily', {
-          fontFamily: 'system-ui, sans-serif',
-          fontSize: '16px',
-          color: '#5dade2',
+        .text(GAME_WIDTH / 2, 121, '📅 Daily', {
+          fontFamily: 'system-ui, "Segoe UI Emoji", sans-serif',
+          fontSize: '12px',
+          color: '#ffffff',
           fontStyle: 'bold',
         })
         .setOrigin(0.5);
     }
 
-    // Score card — rounded panel for emphasis
+    // ─── Hero score card ───────────────────────────────────────────────
+    const cardX = 20;
+    const cardY = 140;
+    const cardW = GAME_WIDTH - 40;
+    const cardH = 220;
     const card = this.add.graphics();
-    card.fillStyle(0x0f3460, 0.85);
-    card.fillRoundedRect(GAME_WIDTH * 0.1, GAME_HEIGHT * 0.32, GAME_WIDTH * 0.8, 160, 14);
-    card.lineStyle(2, 0xf2cc8f, 0.9);
-    card.strokeRoundedRect(GAME_WIDTH * 0.1, GAME_HEIGHT * 0.32, GAME_WIDTH * 0.8, 160, 14);
+    const topColor = this.newHighScore ? 0xfde68a : theme.skyColor;
+    const botColor = this.newHighScore ? 0x8a6020 : this.darken(theme.skyColor, 0.6);
+    const borderColor = this.newHighScore ? 0xffd700 : theme.accentColor;
+    card.fillGradientStyle(topColor, topColor, botColor, botColor, 1);
+    card.fillRoundedRect(cardX, cardY, cardW, cardH, 18);
+    card.lineStyle(this.newHighScore ? 3 : 2, borderColor, 1);
+    card.strokeRoundedRect(cardX, cardY, cardW, cardH, 18);
+    // Left accent stripe
+    const stripe = this.add.graphics();
+    stripe.fillStyle(borderColor, 0.95);
+    stripe.fillRoundedRect(cardX + 5, cardY + 6, 5, cardH - 12, 3);
 
-    this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.35, t('gameover.score', { score: this.score }), {
+    // NEW HIGH ribbon — only when applicable
+    if (this.newHighScore) {
+      const ribbonW = 180;
+      const ribbon = this.add.graphics();
+      ribbon.fillStyle(0xff4d4d, 1);
+      ribbon.fillRoundedRect(GAME_WIDTH / 2 - ribbonW / 2, cardY - 16, ribbonW, 28, 14);
+      ribbon.lineStyle(2, 0xffffff, 0.85);
+      ribbon.strokeRoundedRect(GAME_WIDTH / 2 - ribbonW / 2, cardY - 16, ribbonW, 28, 14);
+      const ribbonText = this.add
+        .text(GAME_WIDTH / 2, cardY - 2, `★ ${t('gameover.new_high', { high: '' }).split('\n')[0]?.replace(/[★!\s]/g, '') || 'NEW HIGH SCORE'} ★`, {
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: '13px',
+          color: '#ffffff',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5);
+      // Pulse animation
+      this.tweens.add({
+        targets: [ribbon, ribbonText],
+        scale: { from: 1, to: 1.06 },
+        duration: 700,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
+
+    // Hero score number — huge, with stroke
+    const scoreColor = this.newHighScore ? '#1a1a1a' : '#ffffff';
+    const heroScore = this.add
+      .text(GAME_WIDTH / 2, cardY + 50, String(this.score), {
         fontFamily: 'system-ui, sans-serif',
-        fontSize: '30px',
-        color: '#ffffff',
+        fontSize: '64px',
+        color: scoreColor,
+        fontStyle: 'bold',
+        stroke: '#000',
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5);
+    heroScore.setScale(0.5).setAlpha(0);
+    this.tweens.add({
+      targets: heroScore,
+      scale: 1,
+      alpha: 1,
+      duration: 480,
+      ease: 'Back.easeOut',
+      delay: 180,
+    });
+
+    // SCORE label above hero number
+    this.add
+      .text(GAME_WIDTH / 2, cardY + 12, 'SCORE', {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '12px',
+        color: scoreColor,
         fontStyle: 'bold',
       })
-      .setOrigin(0.5, 0);
+      .setOrigin(0.5)
+      .setAlpha(0.7);
 
-    this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.42, t('gameover.level', { level: this.level }), {
-        fontFamily: 'system-ui, sans-serif',
-        fontSize: '16px',
-        color: '#cccccc',
-      })
-      .setOrigin(0.5, 0);
+    // Previous high underneath (smaller, only if NOT new high)
+    if (!this.newHighScore) {
+      this.add
+        .text(
+          GAME_WIDTH / 2,
+          cardY + 96,
+          t('gameover.high', { high: this.highScore }),
+          {
+            fontFamily: 'system-ui, sans-serif',
+            fontSize: '13px',
+            color: '#ffffff',
+            stroke: '#000',
+            strokeThickness: 2,
+          },
+        )
+        .setOrigin(0.5)
+        .setAlpha(0.85);
+    }
 
-    const hsLabel = this.newHighScore
-      ? t('gameover.new_high', { high: this.highScore })
-      : t('gameover.high', { high: this.highScore });
-    this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.47, hsLabel, {
-        fontFamily: 'system-ui, sans-serif',
-        fontSize: '14px',
-        color: this.newHighScore ? '#f2cc8f' : '#aaaaaa',
-        align: 'center',
-        fontStyle: this.newHighScore ? 'bold' : 'normal',
-      })
-      .setOrigin(0.5, 0);
+    // ─── 3-stat row inside card ────────────────────────────────────────
+    const statY = cardY + cardH - 60;
+    const statSlotW = (cardW - 30) / 3;
+    const seconds = Math.max(0, Math.round(this.runDurationMs / 1000));
+    const durStr = seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+    this.makeStat(cardX + 15 + statSlotW * 0 + statSlotW / 2, statY, '🏢', String(this.level), 'FLOOR', scoreColor);
+    this.makeStat(cardX + 15 + statSlotW * 1 + statSlotW / 2, statY, '✨', String(this.perfects), 'PERFECT', scoreColor);
+    this.makeStat(cardX + 15 + statSlotW * 2 + statSlotW / 2, statY, '⏱', durStr, 'TIME', scoreColor);
 
+    // ─── Rank chip (below card) ────────────────────────────────────────
     this.rankText = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT * 0.55, supabaseEnabled ? t('gameover.submitting') : '', {
+      .text(GAME_WIDTH / 2, cardY + cardH + 18, supabaseEnabled ? t('gameover.submitting') : '', {
         fontFamily: 'system-ui, sans-serif',
         fontSize: '13px',
-        color: '#cccccc',
-        align: 'center',
+        color: themeManager.accentHex(),
+        fontStyle: 'bold',
+        stroke: '#000',
+        strokeThickness: 2,
       })
-      .setOrigin(0.5, 0);
+      .setOrigin(0.5);
 
     void this.submitAndShowRank();
-    // Fire an interstitial gate ~700ms after the score is on screen, so users
-    // see their result first. Frequency-capped inside AdsManager.
+    // Interstitial after a beat so users see their score first.
     this.time.delayedCall(800, () => {
       void adsManager.maybeShowInterstitial();
     });
 
-    const btnW = 260;
-    let y = GAME_HEIGHT * 0.66;
-    const gap = 12;
+    // ─── Action buttons ────────────────────────────────────────────────
+    const btnW = 280;
+    let by = cardY + cardH + 56;
+    const gap = 10;
 
     new Button(this, {
       x: GAME_WIDTH / 2,
-      y,
+      y: by,
       width: btnW,
+      height: 52,
       label: t('gameover.replay').replace(/^▶\s*/, ''),
       icon: '▶',
+      fontSize: 18,
       bgColor: COLOR.primary,
       onClick: () => this.scene.start(SCENE_KEYS.Game, { mode: this.mode }),
     });
 
-    y += 52 + gap;
+    by += 52 + gap;
+    // Share + Menu side-by-side (50/50 of btnW)
+    const halfW = (btnW - 8) / 2;
     this.shareBtn = new Button(this, {
-      x: GAME_WIDTH / 2,
-      y,
-      width: btnW,
-      height: 46,
+      x: GAME_WIDTH / 2 - halfW / 2 - 4,
+      y: by,
+      width: halfW,
+      height: 44,
       label: t('gameover.share').replace(/^📤\s*/, ''),
       icon: '📤',
-      fontSize: 16,
+      fontSize: 14,
       bgColor: COLOR.secondary,
       onClick: () => void this.handleShare(),
     });
-
-    y += 46 + gap;
     new Button(this, {
-      x: GAME_WIDTH / 2,
-      y,
-      width: btnW,
+      x: GAME_WIDTH / 2 + halfW / 2 + 4,
+      y: by,
+      width: halfW,
       height: 44,
       label: t('gameover.menu').replace(/^↩\s*/, ''),
       icon: '↩',
@@ -162,6 +261,44 @@ export class GameOverScene extends Phaser.Scene {
       bgColor: COLOR.neutral,
       onClick: () => this.scene.start(SCENE_KEYS.MainMenu),
     });
+
+    void stripe; // keep reference (added to scene already)
+  }
+
+  /** A single stat cell: icon on top, value middle, label below. */
+  private makeStat(x: number, y: number, icon: string, value: string, label: string, color: string): void {
+    this.add
+      .text(x, y - 18, icon, {
+        fontFamily: 'system-ui, "Segoe UI Emoji", sans-serif',
+        fontSize: '18px',
+      })
+      .setOrigin(0.5);
+    this.add
+      .text(x, y + 4, value, {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '20px',
+        color,
+        fontStyle: 'bold',
+        stroke: '#000',
+        strokeThickness: 3,
+      })
+      .setOrigin(0.5);
+    this.add
+      .text(x, y + 24, label, {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '10px',
+        color,
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setAlpha(0.75);
+  }
+
+  private darken(color: number, amt: number): number {
+    const r = Math.max(0, ((color >> 16) & 0xff) * (1 - amt));
+    const g = Math.max(0, ((color >> 8) & 0xff) * (1 - amt));
+    const b = Math.max(0, (color & 0xff) * (1 - amt));
+    return ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
   }
 
   private async submitAndShowRank(): Promise<void> {
@@ -179,8 +316,6 @@ export class GameOverScene extends Phaser.Scene {
     if (!this.rankText) return;
     if (!result.ok) {
       const reason = result.reason ?? 'unknown';
-      // rate_limited (local or server): we already have a submission for this
-      // mode in the window — don't surface as an error, treat as "saved".
       if (reason === 'rate_limited_local' || reason.includes('rate_limited')) {
         this.rankText.setText(t('gameover.submitted'));
         return;
@@ -192,8 +327,6 @@ export class GameOverScene extends Phaser.Scene {
       );
       return;
     }
-    // skipped-not-best: score wasn't a new PB; show neutral "submitted" rather
-    // than a failure indicator.
     if (result.reason === 'skipped-not-best') {
       this.rankText.setText(t('gameover.submitted'));
       return;

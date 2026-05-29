@@ -79,9 +79,20 @@ export class LeaderboardScene extends Phaser.Scene {
 
     const viewH = VIEW_BOTTOM - VIEW_TOP;
     this.listCam = this.cameras.add(0, VIEW_TOP, GAME_WIDTH, viewH);
-    this.listCam.setBackgroundColor(0);
+    // Transparent sub-cam → main camera's theme menuBgColor shows through
+    // the gaps between rows. `setBackgroundColor(0)` was painting opaque
+    // black over the viewport.
+    this.listCam.transparent = true;
     this.listCam.scrollY = VIEW_TOP;
     this.cameras.main.ignore(this.listContainer);
+
+    // Single accent divider under tabs (visual parity with
+    // Themes/Achievements). Sub-cam viewport already clips list bleed —
+    // no full solid panel needed.
+    const divider = this.add.graphics();
+    divider.fillStyle(theme.accentColor, 0.55);
+    divider.fillRect(20, VIEW_TOP - 2, GAME_WIDTH - 40, 1);
+    this.uiObjects.push(divider);
 
     this.myRankText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT - 80, '', {
@@ -199,50 +210,128 @@ export class LeaderboardScene extends Phaser.Scene {
   }
 
   private renderRows(): void {
+    const theme = themeManager.getSelected();
     const cardW = GAME_WIDTH - 32;
     const cx = GAME_WIDTH / 2;
     this.rows.forEach((row, i) => {
       const y = i * ROW_H + 4;
       const cy = y + CARD_H / 2;
-      const isTop3 = row.rank <= 3;
       const isSelf = row.isSelf;
-      const topColor = isSelf ? 0x3a2e10 : isTop3 ? 0x2a2e4a : 0x1f2236;
-      const botColor = isSelf ? 0x2a200a : isTop3 ? 0x1f2236 : 0x171a28;
-      const border = isSelf ? 0xf2cc8f : isTop3 ? 0xf2cc8f : 0x4a4e64;
+
+      // Trophy-tier palette for top 3 — 3 distinct metallic gradients.
+      // Self override paints over its own bg but keeps the gold treatment.
+      let topColor: number;
+      let botColor: number;
+      let border: number;
+      let stripeColor: number;
+      let cardScale = 1;
+      if (row.rank === 1) {
+        // Gold — bright warm yellow
+        topColor = 0xfde68a;
+        botColor = 0x8a6020;
+        border = 0xffd700;
+        stripeColor = 0xffd700;
+        cardScale = 1.02;
+      } else if (row.rank === 2) {
+        // Silver — cool steel grey
+        topColor = 0xe5e7eb;
+        botColor = 0x4b5263;
+        border = 0xc0c8d6;
+        stripeColor = 0xc0c8d6;
+      } else if (row.rank === 3) {
+        // Bronze — warm copper
+        topColor = 0xe4a766;
+        botColor = 0x5a3414;
+        border = 0xcd7f32;
+        stripeColor = 0xcd7f32;
+      } else if (isSelf) {
+        topColor = 0x3a2e10;
+        botColor = 0x2a200a;
+        border = 0xf2cc8f;
+        stripeColor = 0xf2cc8f;
+      } else {
+        topColor = theme.skyColor;
+        botColor = this.darken(theme.skyColor, 0.55);
+        border = theme.accentColor;
+        stripeColor = theme.accentColor;
+      }
+      const isTop3 = row.rank <= 3;
+      const cardW2 = cardW * cardScale;
+      const cardH2 = CARD_H * cardScale;
 
       const card = this.add.graphics();
       card.fillGradientStyle(topColor, topColor, botColor, botColor, 1);
-      card.fillRoundedRect(cx - cardW / 2, y, cardW, CARD_H, CARD_R);
-      card.lineStyle(isSelf || isTop3 ? 2 : 1, border, isSelf || isTop3 ? 0.95 : 0.4);
-      card.strokeRoundedRect(cx - cardW / 2, y, cardW, CARD_H, CARD_R);
+      card.fillRoundedRect(cx - cardW2 / 2, y, cardW2, cardH2, CARD_R);
+      // Top 3 get thicker, more opaque border. Self also stands out.
+      const borderW = row.rank === 1 ? 3 : isSelf || isTop3 ? 2 : 1;
+      const borderA = isSelf || isTop3 ? 1 : 0.6;
+      card.lineStyle(borderW, border, borderA);
+      card.strokeRoundedRect(cx - cardW2 / 2, y, cardW2, cardH2, CARD_R);
+
+      // Outer trophy glow for #1 only.
+      if (row.rank === 1) {
+        const glow = this.add.graphics();
+        glow.lineStyle(2, border, 0.35);
+        glow.strokeRoundedRect(
+          cx - cardW2 / 2 - 3,
+          y - 3,
+          cardW2 + 6,
+          cardH2 + 6,
+          CARD_R + 3,
+        );
+        glow.lineStyle(2, border, 0.18);
+        glow.strokeRoundedRect(
+          cx - cardW2 / 2 - 6,
+          y - 6,
+          cardW2 + 12,
+          cardH2 + 12,
+          CARD_R + 6,
+        );
+        this.listContainer.add(glow);
+      }
+
+      // Left accent stripe — wider/brighter for top 3.
+      const stripe = this.add.graphics();
+      stripe.fillStyle(stripeColor, isSelf || isTop3 ? 0.95 : 0.85);
+      const stripeW = isTop3 ? 6 : 4;
+      stripe.fillRoundedRect(cx - cardW2 / 2 + 4, y + 4, stripeW, cardH2 - 8, 2);
 
       const rankIcon =
         row.rank === 1 ? '🥇' : row.rank === 2 ? '🥈' : row.rank === 3 ? '🥉' : `#${row.rank}`;
+      // Dark text on bright metallic for top 3 reads better than white.
+      const rankColor = isTop3 ? '#1a1a1a' : '#ffffff';
       const rank = this.add
-        .text(34, cy, rankIcon, {
+        .text(40, cy, rankIcon, {
           fontFamily: 'system-ui, "Segoe UI Emoji", sans-serif',
-          fontSize: isTop3 ? '20px' : '14px',
-          color: '#ffffff',
+          fontSize: row.rank === 1 ? '26px' : isTop3 ? '22px' : '14px',
+          color: rankColor,
           fontStyle: 'bold',
+          stroke: '#000',
+          strokeThickness: isTop3 ? 2 : 3,
         })
         .setOrigin(0.5);
 
       const name = this.add
-        .text(70, cy - 10, row.displayName, {
+        .text(74, cy - 10, row.displayName, {
           fontFamily: 'system-ui, sans-serif',
           fontSize: '14px',
           color: isSelf ? '#f2cc8f' : '#ffffff',
-          fontStyle: isSelf ? 'bold' : 'normal',
+          fontStyle: 'bold',
+          stroke: '#000',
+          strokeThickness: 3,
         })
         .setOrigin(0, 0.5);
 
       const sub = this.add
-        .text(70, cy + 10, t('leaderboard.row_sub', { level: row.level }), {
+        .text(74, cy + 10, t('leaderboard.row_sub', { level: row.level }), {
           fontFamily: 'system-ui, sans-serif',
           fontSize: '11px',
-          color: '#aaaaaa',
+          color: '#ffffff',
+          stroke: '#000',
+          strokeThickness: 2,
         })
-        .setOrigin(0, 0.5);
+        .setOrigin(0, 0.5)
+        .setAlpha(0.85);
 
       const score = this.add
         .text(GAME_WIDTH - 24, cy, String(row.score), {
@@ -250,16 +339,25 @@ export class LeaderboardScene extends Phaser.Scene {
           fontSize: '18px',
           color: '#f2cc8f',
           fontStyle: 'bold',
+          stroke: '#000',
+          strokeThickness: 3,
         })
         .setOrigin(1, 0.5);
 
-      this.listContainer.add([card, rank, name, sub, score]);
+      this.listContainer.add([card, stripe, rank, name, sub, score]);
     });
     const viewH = VIEW_BOTTOM - VIEW_TOP;
     const totalH = this.rows.length * ROW_H;
     this.maxScroll = Math.max(0, totalH - viewH);
     this.scrollPos = 0;
     this.listCam.scrollY = VIEW_TOP;
+  }
+
+  private darken(color: number, amt: number): number {
+    const r = Math.max(0, ((color >> 16) & 0xff) * (1 - amt));
+    const g = Math.max(0, ((color >> 8) & 0xff) * (1 - amt));
+    const b = Math.max(0, (color & 0xff) * (1 - amt));
+    return ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
   }
 
   private bindScrollInput(viewH: number): void {

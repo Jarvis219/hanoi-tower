@@ -1,3 +1,4 @@
+import { DEV_FAKE_LEADERBOARD } from '../../config/DevFlags';
 import type { LeaderboardPeriod, SubmitScorePayload, SubmitScoreResult } from '../../types/Cloud';
 import type { GameMode } from '../../types/SaveData';
 import { ALL_TIME_BUCKET, todayBucket, weekBucket } from '../../utils/dateBuckets';
@@ -83,12 +84,50 @@ const toRow = (data: LeaderboardRpcRow, selfUid: string | null): LeaderboardRow 
   isSelf: data.user_id === selfUid,
 });
 
+const FAKE_NAMES = [
+  'PhoCoMaster', 'BunChaKing', 'HanoiHero', 'SaiGonStar', 'HueRoyal',
+  'DaNangSurfer', 'TowerLord', 'StackQueen', 'ComboGod', 'PerfectDrop',
+  'BlockBuilder', 'CityPlanner', 'NightOwl', 'EarlyBird', 'DragonRider',
+  'PhoLover42', 'CafeSaigon', 'NeonStreets', 'PixelArtist', 'TocCao',
+  'TangCao', 'KhongLech', 'TayHo', 'OldQuarter',
+];
+const FAKE_COUNTRIES = ['VN', 'SG', 'TH', 'JP', 'US', 'KR', 'TW', 'PH'];
+
+const buildFakeRows = (selfUid: string | null): LeaderboardRow[] => {
+  return FAKE_NAMES.map((name, i) => {
+    const rank = i + 1;
+    // Score decay — top scores ~2400, decay roughly 100 per rank.
+    const score = Math.max(50, 2400 - rank * 90 - Math.floor(Math.random() * 60));
+    const level = Math.max(5, 220 - rank * 7 - Math.floor(Math.random() * 10));
+    // Inject the local player around rank 14 so we can test the highlighted
+    // self-row treatment in the middle of a scrolled list.
+    const isSelf = rank === 14 && Boolean(selfUid);
+    return {
+      uid: isSelf && selfUid ? selfUid : `fake-uid-${rank}`,
+      rank,
+      score,
+      level,
+      displayName: isSelf ? 'You (test)' : name,
+      country: FAKE_COUNTRIES[i % FAKE_COUNTRIES.length],
+      achievedAtIso: new Date(Date.now() - rank * 3600_000).toISOString(),
+      isSelf,
+    };
+  });
+};
+
 export const leaderboardService = {
   async fetchTop(
     mode: GameMode,
     period: LeaderboardPeriod,
     options: { force?: boolean } = {},
   ): Promise<{ rows: LeaderboardRow[]; myRank?: number; cached: boolean }> {
+    // Dev short-circuit: return mock data so we can test the scroll viewport
+    // + trophy styling without populating real Supabase rows.
+    if (DEV_FAKE_LEADERBOARD) {
+      const rows = buildFakeRows(authManager.currentUid);
+      const selfRow = rows.find((r) => r.isSelf);
+      return { rows, myRank: selfRow?.rank, cached: false };
+    }
     if (!supabaseEnabled || !supabase) {
       return { rows: [], cached: false };
     }

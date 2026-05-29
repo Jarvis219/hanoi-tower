@@ -100,7 +100,8 @@ export const MID_BLOCK_KEYS: readonly AtlasFrameKey[] = [
   'block_mid_2',
   'block_mid_3',
   'block_mid_4',
-  'block_mid_5',
+  // block_mid_5 (rooftop terrace row in homes.png) intentionally dropped —
+  // the visual is a terrace with sky-around props, not a stackable floor.
   'block_mid_6',
 ] as const;
 
@@ -164,7 +165,8 @@ const HOME_BLOCK_ROWS: Partial<Record<AtlasFrameKey, { y: number; h: number }>> 
   block_mid_3: { y: 219, h: 63 }, // mid floor with shutters / windows
   block_mid_4: { y: 298, h: 65 }, // red lantern / lit windows
   block_special: { y: 377, h: 60 }, // storefront with awning sign
-  block_mid_5: { y: 461, h: 37 }, // rooftop terrace (tight to water tank)
+  // Row 6 (rooftop terrace at y=461, h=37) dropped per design — the art has
+  // too much transparent sky around water tanks/AC units to read as a floor.
   block_mid_6: { y: 515, h: 61 }, // secondary storefront sign
   block_foundation: { y: 590, h: 68 }, // large foundation sign
 };

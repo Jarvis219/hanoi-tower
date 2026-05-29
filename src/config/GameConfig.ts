@@ -33,7 +33,11 @@ export const createGameConfig = (parent: string): Phaser.Types.Core.GameConfig =
       debug: false,
     },
   },
-  pixelArt: true,
+  // pixelArt: true was forcing WebGL NEAREST sampling on the text canvas
+  // texture, making every label / score / button jagged. Use bilinear
+  // (antialias) instead — sprites here are not 8×8 pixel art, they're
+  // ~200px building tiles that survive bilinear sampling cleanly.
+  antialias: true,
   roundPixels: true,
   scene: [
     BootScene,
