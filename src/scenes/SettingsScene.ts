@@ -86,8 +86,11 @@ export class SettingsScene extends Phaser.Scene {
       // Username stack height: label(0) + name(+18) + edit button center(+44,
       // h=28 → bottom +58). Add ~24px before the linked-account status text.
       this.makeAccountSection(usernameY + 82);
-      // Account text + optional link button + bottom padding ≈ 56px.
-      y = usernameY + 82 + 56;
+      // Account section bottom (when NOT linked): status(0) + button(+32, h=40
+      // → +52) + hint(+60, h=11 → +71). Reserve 88px to keep the next section
+      // header clear of the hint text.
+      const accountHeight = authManager.isGoogleLinked ? 40 : 88;
+      y = usernameY + 82 + accountHeight;
     }
 
     this.makeSectionHeader(y, t('settings.section_danger'));
@@ -382,14 +385,22 @@ export class SettingsScene extends Phaser.Scene {
       new Button(this, {
         x: GAME_WIDTH / 2,
         y: y + 32,
-        width: 240,
-        height: 36,
+        width: 280,
+        height: 40,
         label: t('account.link_google'),
         icon: '🔐',
-        fontSize: 12,
+        fontSize: 14,
         bgColor: COLOR.secondary,
         onClick: () => void this.handleLinkGoogle(),
       });
+      this.add
+        .text(GAME_WIDTH / 2, y + 60, t('account.link_google_hint'), {
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: '11px',
+          color: '#9aa0aa',
+          align: 'center',
+        })
+        .setOrigin(0.5);
     }
   }
 
